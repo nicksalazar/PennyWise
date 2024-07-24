@@ -1,45 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:nick_ai/models/category_model.dart';
-import 'package:nick_ai/models/income_model.dart';
-import 'package:nick_ai/models/reception_method_model.dart';
-import 'package:nick_ai/repositories/income_repository.dart'; 
+import 'package:habit_harmony/models/income_model.dart';
+import 'package:habit_harmony/models/reception_method_model.dart';
+import 'package:habit_harmony/repositories/income_repository.dart';
+import '../models/category_model.dart';
 
 class IncomeProvider with ChangeNotifier {
-  List<IncomeModel> _items = [];
-  List<Category> _categories = [];
-  List<ReceptionMethodModel> _receptionMethod = [];
-
-  List<IncomeModel> get items => _items;
-  List<Category> get categories => _categories;
-  List<ReceptionMethodModel> get metodosPago => _receptionMethod;
-
-  //categories
   final IncomeRepository _repository = IncomeRepository();
+  List<Income> _incomes = [];
+  List<Category> _categories = [];
+  List<ReceptionMethod> _receptionMethods = [];
 
-  void addItem(IncomeModel item) async {
-    final Item = await _repository.insertItem(item);
-    _items.insert(0, Item);
+  List<Income> get incomes => _incomes;
+  List<Category> get categories => _categories;
+  List<ReceptionMethod> get receptionMethods => _receptionMethods;
+
+  Future<void> fetchIncomes() async {
+    _incomes = await _repository.getIncomes();
     notifyListeners();
   }
 
-  void removeItem(String id, {bool archive = true}) {
-    _items.removeWhere((item) => item.id == id);
-    _repository.archiveItem(id, archive: archive);
+  Future<void> addIncome(Income income) async {
+    final newIncome = await _repository.insertIncome(income);
+    int insertIndex = _incomes.indexWhere((e) => e.date.isBefore(newIncome.date));
+  
+    if (insertIndex == -1) {
+      _incomes.add(newIncome);
+    } else {
+      _incomes.insert(insertIndex, newIncome);
+    }
+  
     notifyListeners();
   }
 
-  Future<void> fetchItems() async {
-    final items = await _repository.getItems();
-    _items.clear();
-    _items.addAll(items);
+  Future<void> deleteIncome(String id) async {
+    await _repository.deleteIncome(id);
+    _incomes.removeWhere((income) => income.id == id);
     notifyListeners();
   }
 
-  Future<void> loadInitialData() async {
-    final categories = await _repository.getCategories();
-    final receptionsMethods = await _repository.getReceptionsPayment();
-    _categories.addAll(categories);
-    _receptionMethod.addAll(receptionsMethods);
+  Future<void> fetchCategories() async {
+    _categories = await _repository.getCategories();
+    notifyListeners();
+  }
+
+  Future<void> fetchReceptionMethods() async {
+    _receptionMethods = await _repository.getReceptionMethods();
     notifyListeners();
   }
 }

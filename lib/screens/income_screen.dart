@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:nick_ai/providers/Income_provider.dart';
-import 'package:nick_ai/widgets/income_graphic.dart';
+import 'package:habit_harmony/providers/Income_provider.dart';
+import 'package:habit_harmony/widgets/expense_add_form.dart';
+import 'package:habit_harmony/widgets/income_graphic.dart';
 import 'package:provider/provider.dart';
-import 'package:nick_ai/utils/utils.dart' as utils;
+import 'package:habit_harmony/utils/utils.dart' as utils;
 
 class IncomeScreen extends StatefulWidget {
   const IncomeScreen({Key? key}) : super(key: key);
@@ -16,9 +17,8 @@ class _IncomeScreenState extends State<IncomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<IncomeProvider>(context, listen: false).fetchItems();
+      Provider.of<IncomeProvider>(context, listen: false).fetchIncomes();
     });
-    //log
   }
 
   @override
@@ -28,11 +28,11 @@ class _IncomeScreenState extends State<IncomeScreen> {
         onRefresh: () async {
           // Use fetchItems from ItemProvider to refresh items
           await Provider.of<IncomeProvider>(context, listen: false)
-              .fetchItems();
+              .fetchIncomes();
         },
         child:
             Consumer<IncomeProvider>(builder: (context, itemProvider, child) {
-          final items = itemProvider.items;
+          final items = itemProvider.incomes;
           if (items.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
@@ -45,7 +45,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
                 return Dismissible(
                   key: Key(item.id),
                   background: Container(
-                    color: utils.getCategoryColorChart(item.categoria.name),
+                    color: Colors.amberAccent,
                     alignment: Alignment.centerRight,
                     child: const Padding(
                       padding: EdgeInsets.only(right: 20.0),
@@ -61,17 +61,17 @@ class _IncomeScreenState extends State<IncomeScreen> {
                     final dismissedItem = item;
                     final itemProvider =
                         Provider.of<IncomeProvider>(context, listen: false);
-                    itemProvider.removeItem(dismissedItem.id, archive: true);
+                    itemProvider.deleteIncome(dismissedItem.id);
 
                     // Show a snackbar with an Undo action
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('${dismissedItem.descripcion} dismissed'),
+                        content: Text('${dismissedItem.description} dismissed'),
                         action: SnackBarAction(
                           label: 'Deshacer',
                           onPressed: () {
                             // Restore the dismissed item
-                            itemProvider.addItem(dismissedItem);
+                            itemProvider.addIncome(dismissedItem);
                           },
                         ),
                       ),
@@ -82,7 +82,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
                     decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10.0),
-                        border: utils.getCategoryColor(item.categoria.name),
+                        border: Border.all(color: Colors.grey.shade200),
                         boxShadow: const [
                           BoxShadow(
                               color: Colors.black26,
@@ -90,25 +90,25 @@ class _IncomeScreenState extends State<IncomeScreen> {
                               blurRadius: 6.0)
                         ]),
                     child: ListTile(
-                      title: Text(item.descripcion),
+                      title: Text(item.description),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                              "${item.fecha.day}/${item.fecha.month}/${item.fecha.year}"),
+                              "esto es un test de código para to be honest, no se que estoy haciendo"),
                           Wrap(
                             spacing: 8.0, // Gap between adjacent chips.
                             runSpacing: 4.0, // Gap between lines.
                             children: [
                               Chip(
-                                label: Text(item.receptionMethodModel.name),
+                                label: Text(item.description),
                                 backgroundColor: Colors.lightBlue.shade100,
                               )
                             ],
                           )
                         ],
                       ),
-                      trailing: Text("-\S/.${item.monto.toStringAsFixed(2)}"),
+                      trailing: Text("-\S/. ${item.amount.toStringAsFixed(2)}"),
                     ),
                   ),
                   confirmDismiss: (direction) async {
@@ -142,7 +142,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return Container();
+              return AddBudgetForm(initialCategory: "income",);
             },
           );
         },

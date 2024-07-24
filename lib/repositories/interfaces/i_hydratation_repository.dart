@@ -1,4 +1,4 @@
-import 'package:nick_ai/models/hydration_model.dart';
+import 'package:habit_harmony/models/hydration_model.dart';
 
 abstract class IHydratationRepository {
   Future<void> addDrinkEntry(HydrationModel entry);

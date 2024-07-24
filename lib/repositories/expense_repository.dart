@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:nick_ai/models/category_model.dart';
-import 'package:nick_ai/models/expense_model.dart';
-import 'package:nick_ai/models/metodo_pago_model.dart';
+import 'package:habit_harmony/models/category_model.dart';
+import 'package:habit_harmony/models/expense_model.dart';
+import 'package:habit_harmony/models/payment_method_model.dart';
 
 class ExpenseRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -31,7 +31,9 @@ class ExpenseRepository {
     }
 
   Future<List<Category>> getCategories() async {
-    QuerySnapshot snapshot = await _firestore.collection('categories').get();
+    QuerySnapshot snapshot = await _firestore.collection('categories')
+    .where('type', isEqualTo: 'expense') 
+    .get();
     return snapshot.docs
         .map((doc) => Category.fromFirestore(doc))
         .toList();

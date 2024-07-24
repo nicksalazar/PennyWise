@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:nick_ai/repositories/hydration_repository.dart';
+import 'package:habit_harmony/repositories/hydration_repository.dart';
 import '../models/hydration_model.dart';
 
 class HydrationProvider with ChangeNotifier {

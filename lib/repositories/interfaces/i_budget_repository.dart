@@ -1,6 +1,6 @@
-import 'package:nick_ai/models/category_model.dart';
-import 'package:nick_ai/models/expense_model.dart';
-import 'package:nick_ai/models/metodo_pago_model.dart';
+import 'package:habit_harmony/models/category_model.dart';
+import 'package:habit_harmony/models/expense_model.dart';
+import 'package:habit_harmony/models/payment_method_model.dart';
 
 abstract class IBudgetRepository {
   Future<List<PaymentMethod>> getMetodosPago();

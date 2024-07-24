@@ -1,4 +1,4 @@
-name: nick_ai
+name: habit_harmony
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -81,6 +81,7 @@ flutter:
     - .env
     - assets/icon/app_icon.png
     - assets/icons/
+    - assets/financial_icons/
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
 

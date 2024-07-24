@@ -1,35 +1,52 @@
-import 'package:nick_ai/models/category_model.dart';
-import 'package:nick_ai/models/reception_method_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class IncomeModel {
+class Income {
   final String id;
-  final String descripcion;
-  final DateTime fecha;
-  final Category categoria;
-  final double monto;
-  final ReceptionMethodModel receptionMethodModel;
+  final String description;
+  final DateTime date;
+  final String categoryId;
+  final double amount;
+  final String receptionMethod;
 
-  IncomeModel({required this.descripcion,required this.fecha,required this.categoria,required this.monto,required this.receptionMethodModel, required this.id});
+  Income({
+    required this.id,
+    required this.description,
+    required this.date,
+    required this.categoryId,
+    required this.amount,
+    required this.receptionMethod,
+  });
 
-  factory IncomeModel.fromMap(Map<String, dynamic> map) {
-    final properties = map['properties'] as Map<String, dynamic>? ?? {};
-  
-    final dateStr = properties["Fecha"]?["date"]?["start"]??'';
-    final descripcion = properties["Descripción"]?["title"]?[0]?["text"]?["content"] as String? ?? '';
-    final montoStr = properties["Monto"]?["number"]?.toDouble() ?? 0.0;
-    final id = map["id"] as String? ?? '';
-    final categoria_ = Category.fromMap(properties["Categoría"]?["select"] ?? {});
-    final receptionMethod_ = ReceptionMethodModel.fromMap(properties["Método de Recepción"]?["select"] ?? {});
-    final categoria = Category(id: categoria_.id, name: categoria_.name, color: categoria_.color);
-
-    final receptionMethod = ReceptionMethodModel(id: receptionMethod_.id, name: receptionMethod_.name, color: receptionMethod_.color);
-    return IncomeModel(
-      descripcion: descripcion,
-      fecha: dateStr != null ? DateTime.parse(dateStr) : DateTime.now(),
-      categoria: categoria,
-      receptionMethodModel: receptionMethod,
-      monto: montoStr,
-      id: id
+  factory Income.fromFirestore(DocumentSnapshot doc) {
+    Map data = doc.data() as Map<String, dynamic>;
+    return Income(
+      id: doc.id,
+      description: data['description'] ?? '',
+      date: (data['date'] as Timestamp).toDate(),
+      categoryId: data['categoryId'] ?? '',
+      amount: (data['amount'] ?? 0).toDouble(),
+      receptionMethod: data['receptionMethod'] ?? '',
     );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'description': description,
+      'date': Timestamp.fromDate(date),
+      'categoryId': categoryId,
+      'amount': amount,
+      'paymentMethodId': receptionMethod,
+    };
+  }
+
+  Future<Income> copyWith({required String id}) {
+    return Future.value(Income(
+      id: id,
+      description: description,
+      date: date,
+      categoryId: categoryId,
+      amount: amount,
+      receptionMethod: receptionMethod,
+    ));
   }
 }

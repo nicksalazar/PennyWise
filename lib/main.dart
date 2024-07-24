@@ -1,14 +1,15 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:nick_ai/providers/Income_provider.dart';
-import 'package:nick_ai/providers/expense_provider.dart';
-import 'package:nick_ai/providers/hydration_provider.dart';
-import 'package:nick_ai/repositories/hydration_repository.dart';
-import 'package:nick_ai/screens/auth_wrapper.dart';
-import 'package:nick_ai/screens/home_screen.dart';
-import 'package:nick_ai/screens/login_screen.dart';
-import 'package:nick_ai/screens/splash_screen.dart';
+import 'package:habit_harmony/providers/Income_provider.dart';
+import 'package:habit_harmony/providers/expense_provider.dart';
+import 'package:habit_harmony/providers/hydration_provider.dart';
+import 'package:habit_harmony/providers/transaction_provider.dart';
+import 'package:habit_harmony/repositories/hydration_repository.dart';
+import 'package:habit_harmony/screens/auth_wrapper.dart';
+import 'package:habit_harmony/screens/home_screen.dart';
+import 'package:habit_harmony/screens/login_screen.dart';
+import 'package:habit_harmony/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -31,16 +32,10 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => ExpenseProvider()
-            ..fetchExpenses()
-            ..fetchCategories()
-            ..fetchPaymentMethods(),
-        ),
         ChangeNotifierProvider(
           create: (_) => HydrationProvider(
             HydrationRepository()
@@ -50,8 +45,20 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider(
-          create: (_) => IncomeProvider()..loadInitialData(),
+          create: (_) => TransactionProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (_) => ExpenseProvider()
+            ..fetchCategories()
+            ..fetchExpenses()
+            ..fetchPaymentMethods(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => IncomeProvider()
+            ..fetchCategories()
+            ..fetchIncomes()
+            ..fetchReceptionMethods(),
+        )
       ],
       child: MyApp(),
     ),

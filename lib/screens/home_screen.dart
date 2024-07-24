@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:nick_ai/screens/expense_screen.dart';
-import 'package:nick_ai/screens/dashboard_screen.dart';
-import 'package:nick_ai/screens/profile_screen.dart';
+import 'package:habit_harmony/screens/dashboard_screen.dart';
+import 'package:habit_harmony/screens/profile_screen.dart';
 import 'hydration_screen.dart';
 
 class HomeScreen extends StatefulWidget {

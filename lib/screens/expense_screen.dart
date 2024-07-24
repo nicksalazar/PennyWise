@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
-import 'package:nick_ai/providers/expense_provider.dart';
-import 'package:nick_ai/widgets/expense_add_form.dart';
-import 'package:nick_ai/widgets/spending_chart.dart';
+import 'package:habit_harmony/providers/expense_provider.dart';
+import 'package:habit_harmony/widgets/expense_add_form.dart';
+import 'package:habit_harmony/widgets/spending_chart.dart';
 
 import '../models/category_model.dart';
-import '../models/metodo_pago_model.dart';
+import '../models/payment_method_model.dart';
 
 class ExpenseScreen extends StatefulWidget {
   @override
@@ -35,7 +35,6 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
         },
         child: Consumer<ExpenseProvider>(
           builder: (context, expenseProvider, child) {
-            print("notifiy listener ${expenseProvider.expenses}");
             final expenses = expenseProvider.expenses;
             final categories = expenseProvider.categories;
             final paymentMethods = expenseProvider.paymentMethods;
@@ -68,8 +67,11 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                 final expense = expenses[index - 1];
                 final category = categories.firstWhere(
                   (cat) => cat.id == expense.categoryId,
-                  orElse: () =>
-                      Category(id: '', name: 'Unknown', color: '#CCCCCC'),
+                  orElse: () => Category(
+                      id: '',
+                      name: 'Unknown',
+                      color: '#CCCCCC',
+                      type: "expense"),
                 );
                 final paymentMethod = paymentMethods.firstWhere(
                   (method) => method.id == expense.paymentMethodId,
@@ -180,7 +182,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return AddBudgetForm();
+              return AddBudgetForm(initialCategory: "expense");
             },
           );
         },

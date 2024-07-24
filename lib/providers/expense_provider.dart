@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:nick_ai/models/expense_model.dart';
-import 'package:nick_ai/models/metodo_pago_model.dart';
-import 'package:nick_ai/repositories/expense_repository.dart';
+import 'package:habit_harmony/models/expense_model.dart';
+import 'package:habit_harmony/models/payment_method_model.dart';
+import 'package:habit_harmony/repositories/expense_repository.dart';
+
 
 import '../models/category_model.dart';
 

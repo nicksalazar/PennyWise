@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:nick_ai/screens/expense_screen.dart';
-import 'package:nick_ai/screens/income_screen.dart';
-import 'package:nick_ai/screens/income_screen.dart';
+import 'package:habit_harmony/screens/expense_screen.dart';
+import 'package:habit_harmony/screens/income_screen.dart';
+
 class FinanceDashboard extends StatefulWidget {
   const FinanceDashboard({Key? key}) : super(key: key);
 

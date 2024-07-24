@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
-import 'package:nick_ai/models/hydration_model.dart';
-import 'package:nick_ai/repositories/interfaces/i_hydratation_repository.dart';
+import 'package:habit_harmony/models/hydration_model.dart';
+import 'package:habit_harmony/repositories/interfaces/i_hydratation_repository.dart';
 
 class HydrationRepository implements IHydratationRepository {
   static const String _baseUrl = "https://api.notion.com/v1/";

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:nick_ai/models/hydration_model.dart';
-import 'package:nick_ai/providers/hydration_provider.dart';
+import 'package:habit_harmony/models/hydration_model.dart';
+import 'package:habit_harmony/providers/hydration_provider.dart';
 import 'package:provider/provider.dart';
 
 class HydrationScreen extends StatefulWidget {
