@@ -53,13 +53,12 @@ void main() async {
           create: (_) => ExpenseProvider()
             ..fetchCategories()
             ..fetchExpenses()
-            ..fetchPaymentMethods(),
+            ..fetchAccounts(),
         ),
         ChangeNotifierProvider(
           create: (_) => IncomeProvider()
             ..fetchCategories()
             ..fetchIncomes()
-            ..fetchReceptionMethods(),
         ),
         ChangeNotifierProvider(
           create: (_) => AccountProvider(),

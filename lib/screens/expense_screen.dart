@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:habit_harmony/models/account_model.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:habit_harmony/providers/expense_provider.dart';
@@ -20,8 +21,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ExpenseProvider>(context, listen: false).fetchExpenses();
       Provider.of<ExpenseProvider>(context, listen: false).fetchCategories();
-      Provider.of<ExpenseProvider>(context, listen: false)
-          .fetchPaymentMethods();
+      Provider.of<ExpenseProvider>(context, listen: false).fetchAccounts();
     });
   }
 
@@ -37,7 +37,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
           builder: (context, expenseProvider, child) {
             final expenses = expenseProvider.expenses;
             final categories = expenseProvider.categories;
-            final paymentMethods = expenseProvider.paymentMethods;
+            final accounts = expenseProvider.accounts;
             if (expenses.isEmpty) {
               return Center(
                 child: Column(
@@ -73,10 +73,14 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                       color: '#CCCCCC',
                       type: "expense"),
                 );
-                final paymentMethod = paymentMethods.firstWhere(
-                  (method) => method.id == expense.paymentMethodId,
-                  orElse: () =>
-                      PaymentMethod(id: '', name: 'Unknown', color: '#CCCCCC'),
+                final account = accounts.firstWhere(
+                  (acc) => acc.id == expense.accountId,
+                  orElse: () => Account(
+                    id: '',
+                    name: 'Unknown',
+                    balance: 0,
+                    icon: "help",
+                  ),
                 );
 
                 return Dismissible(
@@ -152,12 +156,12 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                           SizedBox(height: 4),
                           Chip(
                             label: Text(
-                              paymentMethod.name,
+                              account.name,
                               style:
                                   TextStyle(color: Colors.white, fontSize: 12),
                             ),
                             backgroundColor: Color(int.parse(
-                                '0xFF${paymentMethod.color.substring(1)}')),
+                                '0xFF${category.color.substring(1)}')),
                           ),
                         ],
                       ),
@@ -166,7 +170,9 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
-                          color: Colors.red,
+                          color: Color(
+                            int.parse('0xFF${category.color.substring(1)}'),
+                          ),
                         ),
                       ),
                     ),

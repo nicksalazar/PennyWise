@@ -31,4 +31,10 @@ class AccountsRepository {
     await _getAccountCollection().doc(account.id).update(account.toMap());
     return account;
   }
+
+  Future<void> updateBalance(String accountId, double amount) {
+    return _getAccountCollection().doc(accountId).update({
+      'balance': FieldValue.increment(amount),
+    });
+  }
 }

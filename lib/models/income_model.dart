@@ -6,7 +6,7 @@ class Income {
   final DateTime date;
   final String categoryId;
   final double amount;
-  final String receptionMethod;
+  final String accountId;
 
   Income({
     required this.id,
@@ -14,7 +14,7 @@ class Income {
     required this.date,
     required this.categoryId,
     required this.amount,
-    required this.receptionMethod,
+    required this.accountId,
   });
 
   factory Income.fromFirestore(DocumentSnapshot doc) {
@@ -25,7 +25,7 @@ class Income {
       date: (data['date'] as Timestamp).toDate(),
       categoryId: data['categoryId'] ?? '',
       amount: (data['amount'] ?? 0).toDouble(),
-      receptionMethod: data['receptionMethod'] ?? '',
+      accountId: data['accountId'] ?? '',
     );
   }
 
@@ -35,7 +35,7 @@ class Income {
       'date': Timestamp.fromDate(date),
       'categoryId': categoryId,
       'amount': amount,
-      'paymentMethodId': receptionMethod,
+      'accountId': accountId,
     };
   }
 
@@ -46,7 +46,7 @@ class Income {
       date: date,
       categoryId: categoryId,
       amount: amount,
-      receptionMethod: receptionMethod,
+      accountId: accountId,
     ));
   }
 }

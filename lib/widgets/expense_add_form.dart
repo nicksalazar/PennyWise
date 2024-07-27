@@ -1,8 +1,7 @@
+import 'package:habit_harmony/models/account_model.dart';
 import 'package:habit_harmony/models/category_model.dart';
 import 'package:flutter/material.dart';
 import 'package:habit_harmony/models/income_model.dart';
-import 'package:habit_harmony/models/payment_method_model.dart';
-import 'package:habit_harmony/models/reception_method_model.dart';
 import 'package:habit_harmony/providers/Income_provider.dart';
 import 'package:habit_harmony/providers/expense_provider.dart';
 import 'package:provider/provider.dart';
@@ -24,10 +23,9 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
   // Definir las opciones de categoría y método de pago
   DateTime _selectedDateTime = DateTime.now();
   List<Category> _categorias = [];
-  List<PaymentMethod> _paymentMethods = [];
-  List<ReceptionMethod> _receptionMethods = [];
+  List<Account> _accounts = [];
   String? _categorySelect;
-  String? _paymentMethodSelect;
+  String? _accountSelect;
 
   @override
   void initState() {
@@ -36,33 +34,28 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
       if (widget.initialCategory == "income") {
         await Provider.of<IncomeProvider>(context, listen: false)
             .fetchCategories();
-        await Provider.of<IncomeProvider>(context, listen: false)
-            .fetchReceptionMethods();
         _categorias =
             Provider.of<IncomeProvider>(context, listen: false).categories;
-        _receptionMethods = Provider.of<IncomeProvider>(context, listen: false)
-            .receptionMethods;
-        if (_categorias.isNotEmpty) {
-          _categorySelect = _categorias.first.id;
-        }
-        if (_receptionMethods.isNotEmpty) {
-          _paymentMethodSelect = _receptionMethods.first.id;
-        }
+        await Provider.of<IncomeProvider>(context, listen: false)
+            .fetchAccounts();
+        _accounts =
+            Provider.of<IncomeProvider>(context, listen: false).accounts;
       } else {
         await Provider.of<ExpenseProvider>(context, listen: false)
             .fetchCategories();
-        await Provider.of<ExpenseProvider>(context, listen: false)
-            .fetchPaymentMethods();
         _categorias =
             Provider.of<ExpenseProvider>(context, listen: false).categories;
-        _paymentMethods =
-            Provider.of<ExpenseProvider>(context, listen: false).paymentMethods;
-        if (_categorias.isNotEmpty) {
-          _categorySelect = _categorias.first.id;
-        }
-        if (_paymentMethods.isNotEmpty) {
-          _paymentMethodSelect = _paymentMethods.first.id;
-        }
+        await Provider.of<IncomeProvider>(context, listen: false)
+            .fetchAccounts();
+        _accounts =
+            Provider.of<IncomeProvider>(context, listen: false).accounts;
+      }
+
+      if (_accounts.isNotEmpty) {
+        _accountSelect = _accounts.first.id;
+      }
+      if (_categorias.isNotEmpty) {
+        _categorySelect = _categorias.first.id;
       }
       setState(() {});
     });
@@ -101,11 +94,12 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
         (element) => element.id == _categorySelect,
         orElse: () => (Category(id: '', name: '', color: '', type: '')),
       );
-      final metodoPago;
+      final account;
       if (widget.initialCategory == "income") {
-        metodoPago = _receptionMethods.firstWhere(
-            (element) => element.id == _paymentMethodSelect,
-            orElse: () => ReceptionMethod(id: '', name: '', color: ''));
+        account = _accounts.firstWhere(
+          (element) => element.id == _accountSelect,
+          orElse: () => Account(id: '', name: '', balance: 0.0, icon: ""),
+        );
 
         final newItem = Income(
           id: '',
@@ -113,15 +107,15 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
           date: _selectedDateTime,
           categoryId: category.id,
           amount: double.parse(_amountController.text),
-          receptionMethod: metodoPago.id,
+          accountId: account.id,
         );
 
         // Use Provider to add the new budget item
         Provider.of<IncomeProvider>(context, listen: false).addIncome(newItem);
       } else {
-        metodoPago = _paymentMethods.firstWhere(
-          (element) => element.id == _paymentMethodSelect,
-          orElse: () => PaymentMethod(id: '', name: '', color: ''),
+        account = _accounts.firstWhere(
+          (element) => element.id == _accountSelect,
+          orElse: () => Account(id: '', name: '', balance: 0.0, icon: ""),
         );
 
         final newItem = Expense(
@@ -130,7 +124,7 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
           date: _selectedDateTime,
           categoryId: category.id,
           amount: double.parse(_amountController.text),
-          paymentMethodId: metodoPago.id,
+          accountId: account.id,
         );
 
         // Use Provider to add the new budget item
@@ -151,13 +145,13 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
   @override
   Widget build(BuildContext context) {
     final provider;
-    if (widget.initialCategory != "income") {
-      provider = Provider.of<ExpenseProvider>(context);
-      _paymentMethods = provider.paymentMethods;
-    } else {
+    if(widget.initialCategory == "income"){
       provider = Provider.of<IncomeProvider>(context);
-      _receptionMethods = provider.receptionMethods;
+    }else{
+      provider = Provider.of<ExpenseProvider>(context);
     }
+   
+    _accounts = provider.accounts;
     _categorias = provider.categories;
 
     return AlertDialog(
@@ -216,6 +210,8 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
                       });
                     },
                     decoration: const InputDecoration(labelText: 'Categoría'),
+                    validator: (value) =>
+                        value == null ? 'Selecciona una categoría' : null,
                   ),
                 ),
               ),
@@ -223,27 +219,21 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: DropdownButtonFormField(
-                    value: _paymentMethodSelect,
-                    items: widget.initialCategory != "income"
-                        ? _paymentMethods.map((paymentMethod) {
-                            return DropdownMenuItem(
-                              value: paymentMethod.id,
-                              child: Text(paymentMethod.name),
-                            );
-                          }).toList()
-                        : _receptionMethods.map((receptionMethod) {
-                            return DropdownMenuItem(
-                              value: receptionMethod.id,
-                              child: Text(receptionMethod.name),
-                            );
-                          }).toList(),
+                    validator: (value) =>
+                        value == null ? 'Selecciona una cuenta' : null,
+                    value: _accountSelect,
+                    items: _accounts.map((account) {
+                      return DropdownMenuItem(
+                        value: account.id,
+                        child: Text(account.name),
+                      );
+                    }).toList(),
                     onChanged: (String? newValue) {
                       setState(() {
-                        _paymentMethodSelect = newValue;
+                        _accountSelect = newValue;
                       });
                     },
-                    decoration:
-                        const InputDecoration(labelText: 'Método de Pago'),
+                    decoration: const InputDecoration(labelText: 'Cuenta'),
                   ),
                 ),
               ),

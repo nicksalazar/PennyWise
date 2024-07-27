@@ -10,7 +10,7 @@ void main() {
 		date: DateTime.now(),
 		categoryId: 'cat1',
 		amount: 1000.0,
-		receptionMethod: 'Bank Transfer',
+		accountId: 'Bank Transfer',
 	  );
 
 	  expect(income.description, 'Salary');

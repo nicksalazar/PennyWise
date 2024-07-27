@@ -18,6 +18,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<IncomeProvider>(context, listen: false).fetchIncomes();
+      Provider.of<IncomeProvider>(context, listen: false).fetchAccounts();
     });
   }
 
@@ -34,7 +35,7 @@ class _IncomeScreenState extends State<IncomeScreen> {
             Consumer<IncomeProvider>(builder: (context, itemProvider, child) {
           final items = itemProvider.incomes;
           final categories = itemProvider.categories;
-
+          final accounts = itemProvider.accounts;
           if (items.isEmpty) {
             return Center(
               child: Column(
@@ -143,9 +144,9 @@ class _IncomeScreenState extends State<IncomeScreen> {
                             children: [
                               Chip(
                                 label: Text(
-                                  categories
+                                  accounts
                                       .firstWhere((element) =>
-                                          element.id == item.categoryId)
+                                          element.id == item.accountId)
                                       .name,
                                 ),
                                 backgroundColor: Colors.lightBlue.shade100,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:habit_harmony/models/account_model.dart';
 import 'package:habit_harmony/models/expense_model.dart';
 import 'package:habit_harmony/models/payment_method_model.dart';
+import 'package:habit_harmony/repositories/account_repository.dart';
 import 'package:habit_harmony/repositories/expense_repository.dart';
 
 
@@ -8,13 +10,14 @@ import '../models/category_model.dart';
 
 class ExpenseProvider with ChangeNotifier {
   final ExpenseRepository _repository = ExpenseRepository();
+  final AccountsRepository _accountsRepository = AccountsRepository();
   List<Expense> _expenses = [];
   List<Category> _categories = [];
-  List<PaymentMethod> _paymentMethods = [];
+  List<Account> _accounts = [];
 
   List<Expense> get expenses => _expenses;
   List<Category> get categories => _categories;
-  List<PaymentMethod> get paymentMethods => _paymentMethods;
+  List<Account> get accounts => _accounts;
 
   Future<void> fetchExpenses() async {
     _expenses = await _repository.getExpenses();
@@ -45,8 +48,9 @@ class ExpenseProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchPaymentMethods() async {
-    _paymentMethods = await _repository.getPaymentMethods();
+  Future<List<Account>> fetchAccounts() async {
+    _accounts = await _accountsRepository.getAccounts();
     notifyListeners();
+    return _accounts;
   }
 }
