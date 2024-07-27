@@ -26,26 +26,47 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
   List<Category> _categorias = [];
   List<PaymentMethod> _paymentMethods = [];
   List<ReceptionMethod> _receptionMethods = [];
-  String? _categorySelect = 'f7RnY1x838HG9ER7bR1H';
-  String? _paymentMethodSelect = 'zsN4LxkRuuZPczwEvhHW';
-  
+  String? _categorySelect;
+  String? _paymentMethodSelect;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance!.addPostFrameCallback((_) {
+    WidgetsBinding.instance!.addPostFrameCallback((_) async {
       if (widget.initialCategory == "income") {
-        Provider.of<IncomeProvider>(context, listen: false).fetchCategories();
-        Provider.of<IncomeProvider>(context, listen: false)
+        await Provider.of<IncomeProvider>(context, listen: false)
+            .fetchCategories();
+        await Provider.of<IncomeProvider>(context, listen: false)
             .fetchReceptionMethods();
+        _categorias =
+            Provider.of<IncomeProvider>(context, listen: false).categories;
+        _receptionMethods = Provider.of<IncomeProvider>(context, listen: false)
+            .receptionMethods;
+        if (_categorias.isNotEmpty) {
+          _categorySelect = _categorias.first.id;
+        }
+        if (_receptionMethods.isNotEmpty) {
+          _paymentMethodSelect = _receptionMethods.first.id;
+        }
       } else {
-        Provider.of<ExpenseProvider>(context, listen: false).fetchCategories();
-        Provider.of<ExpenseProvider>(context, listen: false)
+        await Provider.of<ExpenseProvider>(context, listen: false)
+            .fetchCategories();
+        await Provider.of<ExpenseProvider>(context, listen: false)
             .fetchPaymentMethods();
+        _categorias =
+            Provider.of<ExpenseProvider>(context, listen: false).categories;
+        _paymentMethods =
+            Provider.of<ExpenseProvider>(context, listen: false).paymentMethods;
+        if (_categorias.isNotEmpty) {
+          _categorySelect = _categorias.first.id;
+        }
+        if (_paymentMethods.isNotEmpty) {
+          _paymentMethodSelect = _paymentMethods.first.id;
+        }
       }
+      setState(() {});
     });
   }
-
-
 
   Future<void> _selectDateTime(BuildContext context) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -138,10 +159,7 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
       _receptionMethods = provider.receptionMethods;
     }
     _categorias = provider.categories;
-    _categorySelect = _categorias[0].id;
-    _paymentMethodSelect = widget.initialCategory != "income"
-        ? _paymentMethods[0].id
-        : _receptionMethods[0].id;
+
     return AlertDialog(
       title: Text("Agregar ${widget.initialCategory}"),
       content: SingleChildScrollView(
@@ -206,17 +224,19 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
                   padding: const EdgeInsets.symmetric(horizontal: 8.0),
                   child: DropdownButtonFormField(
                     value: _paymentMethodSelect,
-                    items: widget.initialCategory != "income" ? _paymentMethods.map((paymentMethod) {
-                      return DropdownMenuItem(
-                        value: paymentMethod.id,
-                        child: Text(paymentMethod.name),
-                      );
-                    }).toList() : _receptionMethods.map((receptionMethod) {
-                      return DropdownMenuItem(
-                        value: receptionMethod.id,
-                        child: Text(receptionMethod.name),
-                      );
-                    }).toList(),
+                    items: widget.initialCategory != "income"
+                        ? _paymentMethods.map((paymentMethod) {
+                            return DropdownMenuItem(
+                              value: paymentMethod.id,
+                              child: Text(paymentMethod.name),
+                            );
+                          }).toList()
+                        : _receptionMethods.map((receptionMethod) {
+                            return DropdownMenuItem(
+                              value: receptionMethod.id,
+                              child: Text(receptionMethod.name),
+                            );
+                          }).toList(),
                     onChanged: (String? newValue) {
                       setState(() {
                         _paymentMethodSelect = newValue;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:habit_harmony/screens/account_screen.dart';
 import 'package:habit_harmony/screens/expense_screen.dart';
 import 'package:habit_harmony/screens/income_screen.dart';
 
@@ -14,25 +15,7 @@ class _FinanceDashboardState extends State<FinanceDashboard>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  final List<Map<String, dynamic>> expenses = [
-    {'category': 'Food', 'amount': 300},
-    {'category': 'Transport', 'amount': 150},
-    {'category': 'Entertainment', 'amount': 100},
-    {'category': 'Bills', 'amount': 400},
-  ];
 
-  final List<Map<String, dynamic>> income = [
-    {'category': 'Salary', 'amount': 2000},
-    {'category': 'Freelance', 'amount': 500},
-    {'category': 'Investments', 'amount': 200},
-  ];
-
-  final List<Map<String, dynamic>> monthlyData = [
-    {'month': 'Jan', 'income': 2500, 'expenses': 2000},
-    {'month': 'Feb', 'income': 2700, 'expenses': 2200},
-    {'month': 'Mar', 'income': 2600, 'expenses': 2100},
-    // ... more months
-  ];
 
   @override
   void initState() {
@@ -54,7 +37,7 @@ class _FinanceDashboardState extends State<FinanceDashboard>
         bottom: TabBar(
           controller: _tabController,
           tabs: [
-            Tab(text: 'Overview'),
+            Tab(text: 'Accounts'),
             Tab(text: 'Expenses'),
             Tab(text: 'Income'),
             Tab(text: 'Analysis'),
@@ -64,7 +47,7 @@ class _FinanceDashboardState extends State<FinanceDashboard>
       body: TabBarView(
         controller: _tabController,
         children: [
-          OverviewTab(monthlyData: monthlyData, expenses: expenses),
+          AccountsScreen(),
           ExpenseScreen(),
           IncomeScreen(),
           AnalysisTab(),

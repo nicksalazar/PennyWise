@@ -1,9 +1,16 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:habit_harmony/models/category_model.dart';
+import 'package:habit_harmony/models/income_model.dart';
 
 class IncomeGraphicWidget extends StatefulWidget {
+  final List<Income> incomes;
+  final List<Category> categories;
+
   const IncomeGraphicWidget({
     super.key,
+    required this.incomes,
+    required this.categories,
   });
 
   @override
@@ -11,12 +18,6 @@ class IncomeGraphicWidget extends StatefulWidget {
 }
 
 class _IncomeGraphicWidgetState extends State<IncomeGraphicWidget> {
-  final List<Map<String, dynamic>> income = [
-    {'category': 'Salary', 'amount': 5000},
-    {'category': 'Freelance', 'amount': 2000},
-    {'category': 'Extra', 'amount': 1000},
-  ];
-  
   @override
   void initState() {
     // TODO: implement initState
@@ -25,6 +26,31 @@ class _IncomeGraphicWidgetState extends State<IncomeGraphicWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final filteredCategories = widget.categories.where((category) {
+      final categorySum = widget.incomes
+          .where((income) => income.categoryId == category.id)
+          .fold<double>(
+              0.0, (previousValue, income) => previousValue + income.amount);
+      return categorySum > 0;
+    }).toList();
+
+    // Create BarChartGroupData for each category
+    final barGroups = filteredCategories.map((category) {
+      final categorySum = widget.incomes
+          .where((income) => income.categoryId == category.id)
+          .fold<double>(
+              0.0, (previousValue, income) => previousValue + income.amount);
+      return BarChartGroupData(
+        x: filteredCategories.indexOf(category),
+        barRods: [
+          BarChartRodData(
+            toY: categorySum,
+            color: Colors.blue,
+          ),
+        ],
+      );
+    }).toList();
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -39,36 +65,33 @@ class _IncomeGraphicWidgetState extends State<IncomeGraphicWidget> {
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
-                  maxY: income
-                      .map((e) => e['amount'] as num)
-                      .reduce((a, b) => a > b ? a : b)
-                      .toDouble(),
-                  barTouchData: BarTouchData(enabled: false),
+                  maxY: 100,
+                  barGroups: barGroups,
                   titlesData: FlTitlesData(
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final index = value.toInt();
-                          if (index >= 0 && index < income.length) {
-                            return Text(income[index]['category']);
-                          }
-                          return Text('');
-                        },
-                      ),
-                    ),
+                      bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) {
+                      final index = value.toInt();
+                      if (index >= 0 && index < filteredCategories.length) {
+                        return Text(
+                          filteredCategories[index].name,
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 14,
+                          ),
+                        );
+                      }
+                      return const SizedBox(); // Add a return statement to ensure a non-null value is always returned
+                    },
+                    interval: 20,
+                  ))),
+                  gridData: FlGridData(
+                    show: true,
+                    drawHorizontalLine: true,
+                    horizontalInterval:
+                        20, // Esto alineará las líneas de la cuadrícula con los títulos
                   ),
-                  barGroups: income.asMap().entries.map((entry) {
-                    return BarChartGroupData(
-                      x: entry.key,
-                      barRods: [
-                        BarChartRodData(
-                          toY: entry.value['amount'].toDouble(),
-                          color: Colors.green,
-                        )
-                      ],
-                    );
-                  }).toList(),
                 ),
               ),
             ),

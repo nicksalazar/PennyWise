@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:habit_harmony/providers/Income_provider.dart';
+import 'package:habit_harmony/providers/account_provider.dart';
 import 'package:habit_harmony/providers/expense_provider.dart';
 import 'package:habit_harmony/providers/hydration_provider.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
@@ -9,6 +10,7 @@ import 'package:habit_harmony/repositories/hydration_repository.dart';
 import 'package:habit_harmony/screens/auth_wrapper.dart';
 import 'package:habit_harmony/screens/home_screen.dart';
 import 'package:habit_harmony/screens/login_screen.dart';
+import 'package:habit_harmony/screens/register_screen.dart';
 import 'package:habit_harmony/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -58,6 +60,9 @@ void main() async {
             ..fetchCategories()
             ..fetchIncomes()
             ..fetchReceptionMethods(),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => AccountProvider(),
         )
       ],
       child: MyApp(),
@@ -88,7 +93,7 @@ Future<void> setupWaterReminders() async {
       i,
       'Time to hydrate!',
       'Don\'t forget to drink some water.',
-      _nextInstanceOfTenMinutes(i * 10),
+      _nextInstanceOfOneHour(i),
       NotificationDetails(
         android: AndroidNotificationDetails(
           'water_reminders',
@@ -107,20 +112,11 @@ Future<void> setupWaterReminders() async {
   }
 }
 
-tz.TZDateTime _nextInstanceOfTenMinutes(int minutesFromNow) {
-  final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
-  tz.TZDateTime scheduledDate = tz.TZDateTime(
-    tz.local,
-    now.year,
-    now.month,
-    now.day,
-    now.hour,
-    (now.minute ~/ 10) * 10,
-  );
-  if (scheduledDate.isBefore(now)) {
-    scheduledDate = scheduledDate.add(const Duration(minutes: 10));
-  }
-  return scheduledDate.add(Duration(minutes: minutesFromNow));
+tz.TZDateTime _nextInstanceOfOneHour(int hourOffset) {
+  final now = tz.TZDateTime.now(tz.local);
+  final nextHour = now.add(Duration(hours: hourOffset));
+  return tz.TZDateTime(
+      tz.local, nextHour.year, nextHour.month, nextHour.day, nextHour.hour);
 }
 
 class MyApp extends StatelessWidget {
@@ -137,6 +133,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => SplashScreen(),
         '/login': (context) => LoginScreen(),
         '/home': (context) => HomeScreen(),
+        '/register': (context) => RegistrationScreen(), // A
         '/auth': (context) => AuthWrapper(),
       },
     );

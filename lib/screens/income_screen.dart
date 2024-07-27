@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:habit_harmony/providers/Income_provider.dart';
 import 'package:habit_harmony/widgets/expense_add_form.dart';
 import 'package:habit_harmony/widgets/income_graphic.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:habit_harmony/utils/utils.dart' as utils;
 
 class IncomeScreen extends StatefulWidget {
   const IncomeScreen({Key? key}) : super(key: key);
@@ -33,13 +33,53 @@ class _IncomeScreenState extends State<IncomeScreen> {
         child:
             Consumer<IncomeProvider>(builder: (context, itemProvider, child) {
           final items = itemProvider.incomes;
+          final categories = itemProvider.categories;
+
           if (items.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.account_balance_wallet_outlined,
+                    size: 80,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    'No hay entradas registradas',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  ElevatedButton(
+                    onPressed: () {
+                      // Aquí puedes agregar la lógica para añadir un nuevo ingreso
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AddBudgetForm(
+                            initialCategory: "income",
+                          );
+                        },
+                      );
+                    },
+                    child: Text('Añadir ingreso'),
+                  ),
+                ],
+              ),
+            );
           }
           return ListView.builder(
               itemCount: items.length + 1,
               itemBuilder: (context, index) {
-                if (index == 0) return IncomeGraphicWidget();
+                if (index == 0)
+                  return IncomeGraphicWidget(
+                    incomes: items,
+                    categories: categories,
+                  );
                 final item = items[index - 1];
 
                 return Dismissible(
@@ -85,9 +125,10 @@ class _IncomeScreenState extends State<IncomeScreen> {
                         border: Border.all(color: Colors.grey.shade200),
                         boxShadow: const [
                           BoxShadow(
-                              color: Colors.black26,
-                              offset: Offset(0, 2),
-                              blurRadius: 6.0)
+                            color: Colors.black26,
+                            offset: Offset(0, 2),
+                            blurRadius: 6.0,
+                          )
                         ]),
                     child: ListTile(
                       title: Text(item.description),
@@ -95,13 +136,18 @@ class _IncomeScreenState extends State<IncomeScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                              "esto es un test de código para to be honest, no se que estoy haciendo"),
+                              DateFormat('dd/MM/yyyy HH:mm').format(item.date)),
                           Wrap(
                             spacing: 8.0, // Gap between adjacent chips.
                             runSpacing: 4.0, // Gap between lines.
                             children: [
                               Chip(
-                                label: Text(item.description),
+                                label: Text(
+                                  categories
+                                      .firstWhere((element) =>
+                                          element.id == item.categoryId)
+                                      .name,
+                                ),
                                 backgroundColor: Colors.lightBlue.shade100,
                               )
                             ],
@@ -142,7 +188,9 @@ class _IncomeScreenState extends State<IncomeScreen> {
           showDialog(
             context: context,
             builder: (BuildContext context) {
-              return AddBudgetForm(initialCategory: "income",);
+              return AddBudgetForm(
+                initialCategory: "income",
+              );
             },
           );
         },

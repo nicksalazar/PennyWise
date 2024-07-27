@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:habit_harmony/firebase/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -18,8 +17,6 @@ class _LoginScreenState extends State<LoginScreen>
   bool _obscureText = true;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  final AuthService _auth = AuthService();
-
   @override
   void initState() {
     super.initState();
@@ -202,6 +199,7 @@ class _LoginScreenState extends State<LoginScreen>
                     TextButton(
                       onPressed: () {
                         // Navegar a la pantalla de registro
+                        Navigator.of(context).pushNamed('/register');
                       },
                       child: Text('¿No tienes una cuenta? Regístrate'),
                     ),

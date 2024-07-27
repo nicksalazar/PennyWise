@@ -28,13 +28,12 @@ class SpendingChart extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
           child: Container(
             padding: const EdgeInsets.all(10.0),
-            height: 500.0,
+            height: 350.0,
             child: Column(
               children: [
                 Expanded(
                   child: PieChart(
                     PieChartData(
-                      centerSpaceRadius: 80.0,
                       sections: categories
                           .map((category) {
                             final totalAmount = expenses
@@ -49,7 +48,7 @@ class SpendingChart extends StatelessWidget {
                           })
                           .where((entry) =>
                               entry.value >
-                              0) // Filtra las entradas con un total mayor a 0
+                              0)
                           .map((entry) {
                             return PieChartSectionData(
                               color: colors[categories.indexOf(entry
@@ -61,7 +60,7 @@ class SpendingChart extends StatelessWidget {
                               titleStyle: const TextStyle(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
-                                fontSize: 16.0,
+                                fontSize: 12.0,
                               ),
                             );
                           })
