@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habit_harmony/models/account_model.dart';
 import 'package:habit_harmony/models/income_model.dart';
-import 'package:habit_harmony/models/reception_method_model.dart';
 import 'package:habit_harmony/repositories/account_repository.dart';
 import 'package:habit_harmony/repositories/income_repository.dart';
 import '../models/category_model.dart';

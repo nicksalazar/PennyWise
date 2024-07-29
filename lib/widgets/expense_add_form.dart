@@ -98,7 +98,8 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
       if (widget.initialCategory == "income") {
         account = _accounts.firstWhere(
           (element) => element.id == _accountSelect,
-          orElse: () => Account(id: '', name: '', balance: 0.0, icon: ""),
+          orElse: () =>
+              Account(id: '', name: '', balance: 0.0, icon: "", color: ""),
         );
 
         final newItem = Income(
@@ -115,7 +116,8 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
       } else {
         account = _accounts.firstWhere(
           (element) => element.id == _accountSelect,
-          orElse: () => Account(id: '', name: '', balance: 0.0, icon: ""),
+          orElse: () =>
+              Account(id: '', name: '', balance: 0.0, icon: "", color: ""),
         );
 
         final newItem = Expense(
@@ -145,12 +147,12 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
   @override
   Widget build(BuildContext context) {
     final provider;
-    if(widget.initialCategory == "income"){
+    if (widget.initialCategory == "income") {
       provider = Provider.of<IncomeProvider>(context);
-    }else{
+    } else {
       provider = Provider.of<ExpenseProvider>(context);
     }
-   
+
     _accounts = provider.accounts;
     _categorias = provider.categories;
 

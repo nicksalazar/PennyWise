@@ -3,15 +3,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Account {
   final String id;
   final String name;
-  final String icon; // 'physical' or 'digital'
-  final double balance;
+  final String icon;
+  double balance;
+  final String color;
 
-  Account({
-    required this.id,
-    required this.name,
-    required this.icon,
-    required this.balance,
-  });
+  Account(
+      {required this.id,
+      required this.name,
+      required this.icon,
+      required this.balance,
+      required this.color});
 
   factory Account.fromDocument(DocumentSnapshot doc) {
     return Account(
@@ -19,6 +20,7 @@ class Account {
       name: doc['name'],
       icon: doc['icon'],
       balance: doc['balance'],
+      color: doc['color'],
     );
   }
 
@@ -27,6 +29,7 @@ class Account {
       'name': name,
       'icon': icon,
       'balance': balance,
+      'color': color,
     };
   }
 
@@ -36,7 +39,18 @@ class Account {
       name: name,
       icon: icon,
       balance: balance,
+      color: color,
     ));
+  }
+
+  //tofirestore
+  Map<String, dynamic> toFirestore() {
+    return {
+      'name': name,
+      'icon': icon,
+      'balance': balance,
+      'color': color,
+    };
   }
 
   factory Account.fromFirestore(DocumentSnapshot doc) {
@@ -46,6 +60,7 @@ class Account {
       name: data['name'] ?? '',
       icon: data['icon'] ?? '',
       balance: (data['balance'] ?? 0).toDouble(),
+      color: data['color'] ?? '',
     );
   }
 }

@@ -5,9 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:habit_harmony/providers/expense_provider.dart';
 import 'package:habit_harmony/widgets/expense_add_form.dart';
 import 'package:habit_harmony/widgets/spending_chart.dart';
-
 import '../models/category_model.dart';
-import '../models/payment_method_model.dart';
 
 class ExpenseScreen extends StatefulWidget {
   @override
@@ -80,6 +78,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                     name: 'Unknown',
                     balance: 0,
                     icon: "help",
+                    color: "#CCCCCC",
                   ),
                 );
 

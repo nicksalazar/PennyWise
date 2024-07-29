@@ -5,7 +5,7 @@ import 'package:habit_harmony/models/account_model.dart';
 class AccountsRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-
+  
   CollectionReference _getAccountCollection() {
     String userId = _auth.currentUser!.uid;
     return _firestore.collection('users').doc(userId).collection('accounts');
@@ -18,7 +18,6 @@ class AccountsRepository {
   }
 
   Future<void> deleteAccount(String id) async {
-    print("deleta acount id: $id");
     await _getAccountCollection().doc(id).delete();
   }
 

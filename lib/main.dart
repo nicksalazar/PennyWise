@@ -6,6 +6,7 @@ import 'package:habit_harmony/providers/account_provider.dart';
 import 'package:habit_harmony/providers/expense_provider.dart';
 import 'package:habit_harmony/providers/hydration_provider.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
+import 'package:habit_harmony/providers/transfer_provider.dart';
 import 'package:habit_harmony/repositories/hydration_repository.dart';
 import 'package:habit_harmony/screens/auth_wrapper.dart';
 import 'package:habit_harmony/screens/home_screen.dart';
@@ -56,13 +57,16 @@ void main() async {
             ..fetchAccounts(),
         ),
         ChangeNotifierProvider(
-          create: (_) => IncomeProvider()
-            ..fetchCategories()
-            ..fetchIncomes()
+            create: (_) => IncomeProvider()
+              ..fetchCategories()
+              ..fetchIncomes()),
+        ChangeNotifierProvider(create: (context) => AccountProvider()),
+        ChangeNotifierProxyProvider<AccountProvider, TransferProvider>(
+          create: (context) =>
+              TransferProvider(context.read<AccountProvider>()),
+          update: (context, accountProvider, previous) =>
+              previous ?? TransferProvider(accountProvider),
         ),
-        ChangeNotifierProvider(
-          create: (_) => AccountProvider(),
-        )
       ],
       child: MyApp(),
     ),
