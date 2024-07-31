@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:habit_harmony/models/account_model.dart';
+import 'package:habit_harmony/models/transfer_model.dart';
 import 'package:habit_harmony/repositories/account_repository.dart';
+import 'package:habit_harmony/repositories/transfer_repository.dart';
 
 class AccountProvider with ChangeNotifier {
   final AccountsRepository _repository = AccountsRepository();
+  final TransferRepository _transferRepository = TransferRepository();
   List<Account> _accounts = [];
 
   List<Account> get accounts => _accounts;
@@ -14,9 +17,29 @@ class AccountProvider with ChangeNotifier {
   }
 
   Future<void> addAccount(Account account) async {
-    final newAccount = await _repository.insertAccount(account);
-    _accounts.add(newAccount);
-    notifyListeners();
+    try {
+      final newAccount = await _repository.insertAccount(account);
+      _accounts.add(newAccount);
+      //add new transfer for initial balance
+      await _transferRepository.createTransferInitital(
+        TransferModel(
+          id: '',
+          sourceAccountId: '',
+          destinationAccountId: newAccount.id,
+          amount: newAccount.balance,
+          date: DateTime.now(),
+          comment: 'Initial balance',
+          type: 'initial',
+        ),
+      );
+      notifyListeners();
+    } catch (e, stackTrace) {
+      // Manejar la excepción aquí
+      print('Error creating transfer: $e');
+      print('Stack trace: $stackTrace');
+      // Puedes lanzar la excepción nuevamente si necesitas que se maneje en otro lugar
+      rethrow;
+    }
   }
 
   Future<void> deleteAccount(String id) async {
@@ -26,9 +49,12 @@ class AccountProvider with ChangeNotifier {
   }
 
   Future<void> editAccount(Account account) async {
-    await _repository.updateAccount(account);
+    Account acc = await _repository.updateAccount(account);
     final index = _accounts.indexWhere((element) => element.id == account.id);
     _accounts[index] = account;
+    //create adjustment transer
+    await _transferRepository.adjustBalance(acc.id, acc.balance);
+    
     notifyListeners();
   }
 }

@@ -7,6 +7,7 @@ class TransferModel {
   final double amount;
   final DateTime date;
   final String comment;
+  final String type;
 
   TransferModel({
     required this.id,
@@ -15,6 +16,7 @@ class TransferModel {
     required this.amount,
     required this.date,
     required this.comment,
+    required this.type,
   });
 
   factory TransferModel.fromFirestore(DocumentSnapshot doc) {
@@ -22,10 +24,11 @@ class TransferModel {
     return TransferModel(
       id: doc.id,
       sourceAccountId: data['sourceAccountId'],
-      destinationAccountId: data['destinationAccountId'],
+      destinationAccountId: data['destinationAccountId'] ?? '',
       amount: data['amount'],
       date: (data['date'] as Timestamp).toDate(),
       comment: data['comment'],
+      type: data['type'] ?? 'transfer',
     );
   }
 
@@ -36,6 +39,7 @@ class TransferModel {
       'amount': amount,
       'date': Timestamp.fromDate(date),
       'comment': comment,
+      'type': type,
     };
   }
 }

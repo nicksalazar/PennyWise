@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:habit_harmony/models/account_model.dart';
+import 'package:habit_harmony/providers/account_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:habit_harmony/providers/transfer_provider.dart';
@@ -14,57 +15,70 @@ class _TransferHistoryWidgetState extends State<TransferHistoryWidget>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final List<String> _tabs = ['Day', 'Week', 'Month', 'Year', 'Period'];
-  DateTime _startDate = DateTime.now();
-  DateTime _endDate = DateTime.now();
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: _tabs.length, vsync: this);
     _tabController.addListener(_handleTabSelection);
+
+    // Initialize with today's transfers
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<TransferProvider>(context, listen: false).getTodayTransfers();
+    });
   }
 
   void _handleTabSelection() {
     if (_tabController.indexIsChanging) {
-      setState(() {
-        switch (_tabController.index) {
-          case 0:
-            _startDate = DateTime.now();
-            _endDate = DateTime.now();
-            break;
-          case 1:
-            _startDate = DateTime.now().subtract(Duration(days: 7));
-            _endDate = DateTime.now();
-            break;
-          case 2:
-            _startDate = DateTime(DateTime.now().year, DateTime.now().month, 1);
-            _endDate = DateTime.now();
-            break;
-          case 3:
-            _startDate = DateTime(DateTime.now().year, 1, 1);
-            _endDate = DateTime.now();
-            break;
-          case 4:
-            // For 'Period', we'll show a date range picker
-            _showDateRangePicker();
-            break;
-        }
-      });
+      final transferProvider =
+          Provider.of<TransferProvider>(context, listen: false);
+      DateTime now = DateTime.now();
+      DateTime startDate, endDate;
+
+      switch (_tabController.index) {
+        case 0: // Day
+          startDate = DateTime(now.year, now.month, now.day);
+          endDate = startDate
+              .add(Duration(days: 1))
+              .subtract(Duration(microseconds: 1));
+          break;
+        case 1: // Week
+          startDate = now.subtract(Duration(days: 7));
+          endDate = now;
+          break;
+        case 2: // Month
+          startDate = DateTime(now.year, now.month, 1);
+          endDate = now;
+          break;
+        case 3: // Year
+          startDate = DateTime(now.year, 1, 1);
+          endDate = now;
+          break;
+        case 4: // Period
+          _showDateRangePicker();
+          return;
+        default:
+          return;
+      }
+
+      transferProvider.updateDateRange(startDate, endDate);
     }
   }
 
   void _showDateRangePicker() async {
+    final transferProvider =
+        Provider.of<TransferProvider>(context, listen: false);
     final DateTimeRange? picked = await showDateRangePicker(
       context: context,
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
-      initialDateRange: DateTimeRange(start: _startDate, end: _endDate),
+      initialDateRange: DateTimeRange(
+        start: transferProvider.startDate,
+        end: transferProvider.endDate,
+      ),
     );
     if (picked != null) {
-      setState(() {
-        _startDate = picked.start;
-        _endDate = picked.end;
-      });
+      transferProvider.updateDateRange(picked.start, picked.end);
     }
   }
 
@@ -87,68 +101,140 @@ class _TransferHistoryWidgetState extends State<TransferHistoryWidget>
         child: Column(
           children: [
             Expanded(
-              child: Consumer<TransferProvider>(
-                builder: (context, transferProvider, child) {
-                  return FutureBuilder<List<TransferModel>>(
-                    future: transferProvider.getTransfersByDateRange(
-                        _startDate, _endDate),
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(child: CircularProgressIndicator());
-                      } else if (snapshot.hasError) {
-                        return Center(child: Text('Error: ${snapshot.error}'));
-                      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                        return Center(child: Text('No transfers found'));
-                      } else {
-                        final transfers = snapshot.data!;
-                        final groupedTransfers =
-                            _groupTransfersByDate(transfers);
-                        return ListView.builder(
-                          itemCount: groupedTransfers.length,
-                          itemBuilder: (context, index) {
-                            final date = groupedTransfers.keys.elementAt(index);
-                            final dateTransfers = groupedTransfers[date]!;
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Text(
-                                    DateFormat('MMMM d, y').format(date),
+              child: Consumer<AccountProvider>(
+                  builder: (context, accountProvider, child) {
+                return Consumer<TransferProvider>(
+                  builder: (context, transferProvider, child) {
+                    if (transferProvider.transfers.isEmpty) {
+                      return Center(
+                        child: Text('No transfers found'),
+                      );
+                    }
+
+                    final groupedTransfers =
+                        _groupTransfersByDate(transferProvider.transfers);
+
+                    final accounts = accountProvider.accounts;
+                    return ListView.builder(
+                      itemCount: groupedTransfers.length,
+                      itemBuilder: (context, index) {
+                        final date = groupedTransfers.keys.elementAt(index);
+                        final dateTransfers = groupedTransfers[date]!;
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Text(
+                                DateFormat('MMMM d, y').format(date),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            ...dateTransfers.map((transfer) => ListTile(
+                                  title: Text(
+                                    () {
+                                      switch (transfer.type) {
+                                        case "deposit":
+                                          return 'Deposit';
+                                        case "adjustment":
+                                          return 'Adjustment';
+                                        case "transfer":
+                                          return 'Transfer';
+                                        case "initial":
+                                          return 'Initial Balance';
+                                        default:
+                                          return 'Unknown';
+                                      }
+                                    }(),
+                                  ),
+                                  subtitle: Text(
+                                    () {
+                                      switch (transfer.type) {
+                                        case "adjustment":
+                                          final account = accounts.firstWhere(
+                                            (account) =>
+                                                account.id ==
+                                                transfer.sourceAccountId,
+                                            orElse: () => Account(
+                                              id: "",
+                                              name: "",
+                                              icon: "",
+                                              balance: 0,
+                                              color: "",
+                                            ),
+                                          );
+                                          return 'Adjustment to ${account.name}';
+                                        case "transfer":
+                                          final sourceAccount =
+                                              accounts.firstWhere(
+                                            (account) =>
+                                                account.id ==
+                                                transfer.sourceAccountId,
+                                            orElse: () => Account(
+                                              id: "",
+                                              name: "",
+                                              icon: "",
+                                              balance: 0,
+                                              color: "",
+                                            ),
+                                          );
+
+                                          final destinationAccount =
+                                              accounts.firstWhere(
+                                            (account) =>
+                                                account.id ==
+                                                transfer.destinationAccountId,
+                                            orElse: () => Account(
+                                              id: "",
+                                              name: "",
+                                              icon: "",
+                                              balance: 0,
+                                              color: "",
+                                            ),
+                                          );
+                                          return "transfer " +
+                                              sourceAccount.name +
+                                              " -> " +
+                                              destinationAccount.name;
+                                        case "initial":
+                                          final account = accounts.firstWhere(
+                                            (account) =>
+                                                account.id ==
+                                                transfer.destinationAccountId,
+                                            orElse: () => Account(
+                                              id: "",
+                                              name: "",
+                                              icon: "",
+                                              balance: 0,
+                                              color: "",
+                                            ),
+                                          );
+                                          return 'Initial Balance to ${account.name}';
+                                        default:
+                                          return 'Unknown';
+                                      }
+                                    }(),
+                                  ),
+                                  trailing: Text(
+                                    '\$${transfer.amount.toStringAsFixed(2)}',
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      color: transfer.amount > 0
+                                          ? Colors.green
+                                          : Colors.red,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                ),
-                                ...dateTransfers.map((transfer) => ListTile(
-                                      title: Text(
-                                        transfer.sourceAccountId ==
-                                                transfer.destinationAccountId
-                                            ? 'Deposit'
-                                            : 'Transfer',
-                                      ),
-                                      subtitle: Text(
-                                          '${transfer.sourceAccountId} to ${transfer.destinationAccountId}'),
-                                      trailing: Text(
-                                        '\$${transfer.amount.toStringAsFixed(2)}',
-                                        style: TextStyle(
-                                          color: transfer.amount > 0
-                                              ? Colors.green
-                                              : Colors.red,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    )),
-                              ],
-                            );
-                          },
+                                )),
+                          ],
                         );
-                      }
-                    },
-                  );
-                },
-              ),
+                      },
+                    );
+                  },
+                );
+              }),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),

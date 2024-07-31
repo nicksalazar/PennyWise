@@ -7,12 +7,13 @@ class Account {
   double balance;
   final String color;
 
-  Account(
-      {required this.id,
-      required this.name,
-      required this.icon,
-      required this.balance,
-      required this.color});
+  Account({
+    required this.id,
+    required this.name,
+    required this.icon,
+    required this.balance,
+    required this.color,
+  });
 
   factory Account.fromDocument(DocumentSnapshot doc) {
     return Account(

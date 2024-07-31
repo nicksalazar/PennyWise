@@ -20,10 +20,41 @@ class TransferRepository {
     return _firestore.collection('users').doc(userId).collection('accounts');
   }
 
+  //funtion initial balance
+  Future<void> createTransferInitital(TransferModel transfer) async {
+    try {
+      await _firestore.runTransaction((transaction) async {
+        DocumentReference destAccountRef =
+            _getAccountCollection().doc(transfer.destinationAccountId);
+
+        DocumentSnapshot destAccountDoc = await transaction.get(destAccountRef);
+
+        if (!destAccountDoc.exists) {
+          throw Exception('Account does not exist');
+        }
+
+        // Convert to Account object
+        Account destAccount = Account.fromFirestore(destAccountDoc);
+
+        // Update balance
+        destAccount.balance += transfer.amount;
+
+        // Update the account in Firestore
+        transaction.update(destAccountRef, destAccount.toFirestore());
+
+        // Create the transfer document
+        DocumentReference transferRef = _getTransferCollection().doc();
+        transaction.set(transferRef, transfer.toFirestore());
+      });
+    } catch (e) {
+      print('Error creating transfer: $e');
+      throw e;
+    }
+  }
+
   Future<void> createTransfer(TransferModel transfer) async {
     try {
       await _firestore.runTransaction((transaction) async {
-        // Get the source and destination account documents
         DocumentReference sourceAccountRef =
             _getAccountCollection().doc(transfer.sourceAccountId);
         DocumentReference destAccountRef =
@@ -64,5 +95,62 @@ class TransferRepository {
       print('Error creating transfer: $e');
       throw e;
     }
+  }
+
+  Future<void> adjustBalance(String accountId, double amount) async {
+    try {
+      await _firestore.runTransaction((transaction) async {
+        // Get the account document
+        DocumentReference accountRef = _getAccountCollection().doc(accountId);
+        DocumentSnapshot accountDoc = await transaction.get(accountRef);
+
+        if (!accountDoc.exists) {
+          throw Exception('Account does not exist');
+        }
+
+        // Convert to Account object
+        Account account = Account.fromFirestore(accountDoc);
+
+        // Update balance
+        account.balance += amount;
+
+        if (account.balance < 0) {
+          throw Exception('Resulting balance cannot be negative');
+        }
+
+        // Update the account in Firestore
+        transaction.update(accountRef, account.toFirestore());
+
+        // Create the balance adjustment document
+        DocumentReference adjustmentRef = _getTransferCollection().doc();
+        TransferModel adjustment = TransferModel(
+          id: adjustmentRef.id,
+          sourceAccountId: accountId,
+          destinationAccountId: '', // No destination for balance adjustment
+          amount: amount,
+          date: DateTime.now(),
+          comment: 'Balance adjustment',
+          type: 'adjustment',
+        );
+        transaction.set(adjustmentRef, adjustment.toFirestore());
+      });
+    } catch (e) {
+      print('Error adjusting balance: $e');
+      throw e;
+    }
+  }
+
+  Future<List<TransferModel>> getTransfersByDateRange(
+      DateTime start, DateTime end) {
+    return _getTransferCollection()
+        .where('date', isGreaterThanOrEqualTo: start)
+        .where('date', isLessThanOrEqualTo: end)
+        .orderBy('date', descending: true)
+        .get()
+        .then((snapshot) {
+      return snapshot.docs
+          .map((doc) => TransferModel.fromFirestore(doc))
+          .toList();
+    });
   }
 }

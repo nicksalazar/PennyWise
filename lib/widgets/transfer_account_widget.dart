@@ -24,19 +24,23 @@ class _TransferAccountWidgetState extends State<TransferAccountWidget> {
     if (_formKey.currentState!.validate()) {
       try {
         TransferModel transfer = TransferModel(
-          id: '', // This will be set by Firestore
+          id: '',
           sourceAccountId: _sourceAccount!,
           destinationAccountId: _destinationAccount!,
           amount: _amount,
           date: _selectedDate,
           comment: _comment!,
+          type: 'transfer',
         );
 
         await Provider.of<TransferProvider>(context, listen: false)
             .addTransfer(transfer);
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Transfer successful')),
+          SnackBar(
+            content: Text('Transfer successful'),
+            backgroundColor: Colors.green,
+          ),
         );
 
         Navigator.of(context).pop();
