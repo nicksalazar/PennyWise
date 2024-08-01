@@ -5,14 +5,18 @@ import 'package:habit_harmony/providers/Income_provider.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
 import 'package:habit_harmony/providers/expense_provider.dart';
 import 'package:habit_harmony/providers/hydration_provider.dart';
+import 'package:habit_harmony/providers/loading_provider.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
 import 'package:habit_harmony/providers/transfer_provider.dart';
+import 'package:habit_harmony/repositories/account_repository.dart';
 import 'package:habit_harmony/repositories/hydration_repository.dart';
+import 'package:habit_harmony/repositories/transfer_repository.dart';
 import 'package:habit_harmony/screens/auth_wrapper.dart';
 import 'package:habit_harmony/screens/home_screen.dart';
 import 'package:habit_harmony/screens/login_screen.dart';
 import 'package:habit_harmony/screens/register_screen.dart';
 import 'package:habit_harmony/screens/splash_screen.dart';
+import 'package:habit_harmony/widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
@@ -40,6 +44,9 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          create: (_) => LoadingProvider(),
+        ),
+        ChangeNotifierProvider(
           create: (_) => HydrationProvider(
             HydrationRepository()
               ..fetchDrinkEntries(
@@ -60,12 +67,19 @@ void main() async {
             create: (_) => IncomeProvider()
               ..fetchCategories()
               ..fetchIncomes()),
-        ChangeNotifierProvider(create: (context) => AccountProvider()),
-        ChangeNotifierProxyProvider<AccountProvider, TransferProvider>(
-          create: (context) =>
-              TransferProvider(context.read<AccountProvider>()),
-          update: (context, accountProvider, previous) =>
-              previous ?? TransferProvider(accountProvider),
+        ChangeNotifierProvider(
+          create: (context) => AccountProvider(
+            AccountsRepository(),
+            TransferRepository(),
+            Provider.of<LoadingProvider>(context, listen: false),
+          ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => TransferProvider(
+            Provider.of<AccountProvider>(context, listen: false),
+            TransferRepository(),
+            Provider.of<LoadingProvider>(context, listen: false),
+          ),
         ),
       ],
       child: MyApp(),
@@ -138,6 +152,14 @@ class MyApp extends StatelessWidget {
         '/home': (context) => HomeScreen(),
         '/register': (context) => RegistrationScreen(), // A
         '/auth': (context) => AuthWrapper(),
+      },
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child!,
+            LoadingIndicator(),
+          ],
+        );
       },
     );
   }
