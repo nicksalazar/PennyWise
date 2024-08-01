@@ -22,8 +22,6 @@ class TransferProvider with ChangeNotifier {
   Future<void> addTransfer(TransferModel transfer) async {
     try {
       await _transferRepository.createTransfer(transfer);
-      _transfers.add(transfer);
-      //fetch transefer
       await _accountProvider.fetchAccounts();
       notifyListeners();
     } catch (e) {

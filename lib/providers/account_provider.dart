@@ -19,7 +19,6 @@ class AccountProvider with ChangeNotifier {
   Future<void> addAccount(Account account) async {
     try {
       final newAccount = await _repository.insertAccount(account);
-      _accounts.add(newAccount);
       //add new transfer for initial balance
       await _transferRepository.createTransferInitital(
         TransferModel(
@@ -32,6 +31,8 @@ class AccountProvider with ChangeNotifier {
           type: 'initial',
         ),
       );
+      //feth accounts
+      await fetchAccounts();
       notifyListeners();
     } catch (e, stackTrace) {
       // Manejar la excepción aquí
@@ -50,11 +51,9 @@ class AccountProvider with ChangeNotifier {
 
   Future<void> editAccount(Account account) async {
     Account acc = await _repository.updateAccount(account);
-    final index = _accounts.indexWhere((element) => element.id == account.id);
-    _accounts[index] = account;
-    //create adjustment transer
     await _transferRepository.adjustBalance(acc.id, acc.balance);
-    
+    //fetch accounts
+    await fetchAccounts();
     notifyListeners();
   }
 }

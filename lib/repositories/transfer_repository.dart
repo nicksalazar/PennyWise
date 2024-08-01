@@ -37,7 +37,7 @@ class TransferRepository {
         Account destAccount = Account.fromFirestore(destAccountDoc);
 
         // Update balance
-        destAccount.balance += transfer.amount;
+        destAccount.balance = transfer.amount;
 
         // Update the account in Firestore
         transaction.update(destAccountRef, destAccount.toFirestore());

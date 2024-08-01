@@ -233,7 +233,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
       } else {
         Provider.of<AccountProvider>(context, listen: false).addAccount(
           Account(
-            id: accountNameController.text,
+            id: "",
             name: accountNameController.text,
             icon: iconDataMap.keys.firstWhere(
               (key) => iconDataMap[key] == _selectedIcon,
