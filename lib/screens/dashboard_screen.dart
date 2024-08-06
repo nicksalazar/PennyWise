@@ -31,20 +31,20 @@ class _FinanceDashboardState extends State<FinanceDashboard>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Finance Dashboard'),
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: [
-            Tab(text: 'Accounts'),
-            Tab(text: 'Expenses'),
-            Tab(text: 'Income'),
-            Tab(text: 'Analysis'),
-          ],
-        ),
-      ),
-      body: TabBarView(
+    return Center(
+      // appBar: AppBar(
+      //   title: Text('Finance Dashboard'),
+      //   bottom: TabBar(
+      //     controller: _tabController,
+      //     tabs: [
+      //       Tab(text: 'Accounts'),
+      //       Tab(text: 'Expenses'),
+      //       Tab(text: 'Income'),
+      //       Tab(text: 'Analysis'),
+      //     ],
+      //   ),
+      // ),
+      child: TabBarView(
         controller: _tabController,
         children: [
           AccountsScreen(),

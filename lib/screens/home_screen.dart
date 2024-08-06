@@ -11,7 +11,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   final List<Widget> _pages = [
-    HydrationScreen(),
     FinanceDashboard(),
     ProfileScreen(),
   ];
@@ -30,10 +29,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_drink),
-            label: 'Hydration',
-          ),
           BottomNavigationBarItem(
             icon: Icon(Icons.account_balance_wallet),
             label: 'Budget',

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -12,10 +13,14 @@ import 'package:habit_harmony/repositories/account_repository.dart';
 import 'package:habit_harmony/repositories/hydration_repository.dart';
 import 'package:habit_harmony/repositories/transfer_repository.dart';
 import 'package:habit_harmony/screens/auth_wrapper.dart';
+import 'package:habit_harmony/screens/categories/categories_screen.dart';
+import 'package:habit_harmony/screens/home/home_screen.dart';
 import 'package:habit_harmony/screens/home_screen.dart';
 import 'package:habit_harmony/screens/login_screen.dart';
+import 'package:habit_harmony/screens/categories/categories_new_screen.dart';
 import 'package:habit_harmony/screens/register_screen.dart';
 import 'package:habit_harmony/screens/splash_screen.dart';
+import 'package:habit_harmony/themes/app_theme.dart';
 import 'package:habit_harmony/widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -40,6 +45,9 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+  );
   runApp(
     MultiProvider(
       providers: [
@@ -142,16 +150,20 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Flutter Notion Budget Tracker",
-      theme: ThemeData(
-        primaryColor: Colors.white,
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode:
+          ThemeMode.light,
       initialRoute: '/',
       routes: {
         '/': (context) => SplashScreen(),
         '/login': (context) => LoginScreen(),
-        '/home': (context) => HomeScreen(),
+        '/home': (context) => ExpenseTrackerApp(),
         '/register': (context) => RegistrationScreen(), // A
         '/auth': (context) => AuthWrapper(),
+        '/categories': (context) => CategoriesScreen(),
+        //new categories
+        '/new_category': (context) => NewCategoryScreen(),
       },
       builder: (context, child) {
         return Stack(

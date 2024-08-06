@@ -54,9 +54,9 @@ class _AccountsScreenState extends State<AccountsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5),
-      body: RefreshIndicator(
+    return Container(
+      // backgroundColor: Color(0xFFF5F5F5),
+      child: RefreshIndicator(
         onRefresh: () async {
           await Provider.of<AccountProvider>(context, listen: false)
               .fetchAccounts();
