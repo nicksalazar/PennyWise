@@ -46,6 +46,7 @@ dependencies:
   google_sign_in: ^6.2.1
   font_awesome_flutter: ^10.7.0
   cloud_firestore: ^5.1.0
+  go_router: ^14.2.3
 
 
 

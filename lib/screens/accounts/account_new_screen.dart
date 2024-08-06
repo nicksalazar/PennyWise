@@ -6,9 +6,9 @@ import 'package:habit_harmony/utils/icon_utils.dart';
 import 'package:provider/provider.dart';
 
 class AddAccountScreen extends StatefulWidget {
-  final Account? account;
+  final String? accountId;
 
-  AddAccountScreen({this.account});
+  AddAccountScreen({this.accountId});
 
   @override
   _AddAccountScreenState createState() => _AddAccountScreenState();
@@ -36,12 +36,13 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.account != null) {
-      accountNameController.text = widget.account!.name;
-      balanceController.text = widget.account!.balance.toString();
-      selectedIcon = widget.account!.icon;
-      selectedColor =
-          Color(int.parse(widget.account!.color.replaceFirst('#', '0xFF')));
+    if (widget.accountId != null) {
+      final account = Provider.of<AccountProvider>(context, listen: false)
+          .getAccountById(widget.accountId!);
+      accountNameController.text = account.name;
+      balanceController.text = account.balance.toString();
+      selectedIcon = account.icon;
+      selectedColor = Color(int.parse(account.color.replaceFirst('#', '0xFF')));
 
       // Assuming the currency is stored in the account model, update this line accordingly
       selectedCurrency =
@@ -55,7 +56,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.account == null ? 'Add account' : 'Edit account'),
+        title: Text(widget.accountId == null ? 'Add account' : 'Edit account'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
@@ -220,7 +221,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                 ],
               ),
               SizedBox(height: 40),
-              if (widget.account != null) // Check if editing
+              if (widget.accountId != null) // Check if editing
                 ElevatedButton(
                   child: Text('Delete'),
                   style: ElevatedButton.styleFrom(
@@ -232,7 +233,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   onPressed: () {
                     // Handle delete account logic
                     Provider.of<AccountProvider>(context, listen: false)
-                        .deleteAccount(widget.account!.id);
+                        .deleteAccount(widget.accountId!);
                     Navigator.pop(context);
                   },
                 ),
@@ -244,7 +245,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                     if (_formKey.currentState!.validate()) {
                       // El formulario es válido
                       // Realizar la acción deseada
-                      _submitForm(widget.account != null);
+                      _submitForm(widget.accountId != null);
                     }
                   },
                   style: ElevatedButton.styleFrom(
@@ -267,7 +268,7 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
       if (isEdit) {
         Provider.of<AccountProvider>(context, listen: false).editAccount(
           Account(
-            id: widget.account!.id,
+            id: widget.accountId!,
             name: accountNameController.text,
             icon: selectedIcon,
             balance: double.parse(balanceController.text),

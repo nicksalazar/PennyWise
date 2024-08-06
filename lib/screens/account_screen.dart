@@ -3,8 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:habit_harmony/models/account_model.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
 import 'package:habit_harmony/providers/transfer_provider.dart';
-import 'package:habit_harmony/widgets/transfer_account_widget.dart';
-import 'package:habit_harmony/widgets/transfer_history_widget.dart';
+import 'package:habit_harmony/screens/accounts/account_transfer_history_screen.dart';
 import 'package:provider/provider.dart';
 
 class AccountsScreen extends StatefulWidget {
@@ -61,8 +60,8 @@ class _AccountsScreenState extends State<AccountsScreen> {
           await Provider.of<AccountProvider>(context, listen: false)
               .fetchAccounts();
         },
-        child:
-            Consumer<TransferProvider>(builder: (context, transerProvider, child) {
+        child: Consumer<TransferProvider>(
+            builder: (context, transerProvider, child) {
           return Consumer<AccountProvider>(
               builder: (context, itemProvider, child) {
             final accounts = itemProvider.accounts;
@@ -100,11 +99,11 @@ class _AccountsScreenState extends State<AccountsScreen> {
                       children: [
                         InkWell(
                           onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (context) => TransferHistoryWidget(),
-                            );
+                            // showModalBottomSheet(
+                            //   context: context,
+                            //   isScrollControlled: true,
+                            //   builder: (context) => TransferHistoryWidget(),
+                            // );
                           },
                           child: Column(
                             children: [
@@ -115,15 +114,7 @@ class _AccountsScreenState extends State<AccountsScreen> {
                           ),
                         ),
                         InkWell(
-                          onTap: () {
-                            showModalBottomSheet(
-                              context: context,
-                              isScrollControlled: true,
-                              builder: (context) => TransferAccountWidget(
-                                accounts: accounts,
-                              ),
-                            );
-                          },
+                          onTap: () {},
                           child: Column(
                             children: [
                               Icon(Icons.money_sharp, size: 30),

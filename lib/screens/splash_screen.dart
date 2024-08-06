@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -23,9 +24,9 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return; // Check again before using context
 
       if (user == null) {
-        Navigator.of(context).pushReplacementNamed('/login');
+        context.go('/login'); // Use go_router to navigate to the login screen
       } else {
-        Navigator.of(context).pushReplacementNamed('/home');
+        context.go('/home'); // Use go_router to navigate to the home screen
       }
     });
   }

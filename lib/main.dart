@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:go_router/go_router.dart';
 import 'package:habit_harmony/providers/Income_provider.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
 import 'package:habit_harmony/providers/expense_provider.dart';
@@ -12,10 +13,13 @@ import 'package:habit_harmony/providers/transfer_provider.dart';
 import 'package:habit_harmony/repositories/account_repository.dart';
 import 'package:habit_harmony/repositories/hydration_repository.dart';
 import 'package:habit_harmony/repositories/transfer_repository.dart';
+import 'package:habit_harmony/screens/accounts/account_new_screen.dart';
+import 'package:habit_harmony/screens/accounts/account_new_transfer_screen.dart';
+import 'package:habit_harmony/screens/accounts/account_screen.dart';
+import 'package:habit_harmony/screens/accounts/account_transfer_history_screen.dart';
 import 'package:habit_harmony/screens/auth_wrapper.dart';
 import 'package:habit_harmony/screens/categories/categories_screen.dart';
 import 'package:habit_harmony/screens/home/home_screen.dart';
-import 'package:habit_harmony/screens/home_screen.dart';
 import 'package:habit_harmony/screens/login_screen.dart';
 import 'package:habit_harmony/screens/categories/categories_new_screen.dart';
 import 'package:habit_harmony/screens/register_screen.dart';
@@ -84,7 +88,6 @@ void main() async {
         ),
         ChangeNotifierProvider(
           create: (context) => TransferProvider(
-            Provider.of<AccountProvider>(context, listen: false),
             TransferRepository(),
             Provider.of<LoadingProvider>(context, listen: false),
           ),
@@ -145,26 +148,75 @@ tz.TZDateTime _nextInstanceOfOneHour(int hourOffset) {
 }
 
 class MyApp extends StatelessWidget {
+  final GoRouter _router = GoRouter(
+    routes: [
+      GoRoute(
+        path: '/',
+        builder: (context, state) => SplashScreen(),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => LoginScreen(),
+      ),
+      GoRoute(
+        path: '/home',
+        builder: (context, state) => ExpenseTrackerApp(),
+      ),
+      GoRoute(
+        path: '/register',
+        builder: (context, state) => RegistrationScreen(),
+      ),
+      GoRoute(
+        path: '/auth',
+        builder: (context, state) => AuthWrapper(),
+      ),
+      GoRoute(
+        path: '/categories',
+        builder: (context, state) => CategoriesScreen(),
+      ),
+      GoRoute(
+        path: '/new_category',
+        builder: (context, state) => NewCategoryScreen(),
+      ),
+      GoRoute(
+        path: '/accounts',
+        builder: (context, state) => AccountScreen(),
+        routes: [
+          //transfer history
+          GoRoute(
+            path: 'transfer_history',
+            builder: (context, state) => TransferHistoryScreen(),
+          ),
+          GoRoute(
+            path: 'new_transfer',
+            builder: (context, state) => CreateTransferScreen(),
+          ),
+          //new account
+          GoRoute(
+            path: 'new_account',
+            builder: (context, state) => AddAccountScreen(),
+          ),
+          GoRoute(
+            path: 'edit_account/:id',
+            builder: (context, state) {
+              final id = state.pathParameters['id'];
+              return AddAccountScreen(accountId: id);
+            },
+          ),
+        ],
+      ),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: "Flutter Notion Budget Tracker",
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode:
-          ThemeMode.light,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => SplashScreen(),
-        '/login': (context) => LoginScreen(),
-        '/home': (context) => ExpenseTrackerApp(),
-        '/register': (context) => RegistrationScreen(), // A
-        '/auth': (context) => AuthWrapper(),
-        '/categories': (context) => CategoriesScreen(),
-        //new categories
-        '/new_category': (context) => NewCategoryScreen(),
-      },
+      themeMode: ThemeMode.light,
+      routerConfig: _router,
       builder: (context, child) {
         return Stack(
           children: [

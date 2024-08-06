@@ -33,8 +33,8 @@ class _TransferAccountWidgetState extends State<TransferAccountWidget> {
           type: 'transfer',
         );
 
-        await Provider.of<TransferProvider>(context, listen: false)
-            .addTransfer(transfer);
+        // await Provider.of<TransferProvider>(context, listen: false)
+        //     .addTransfer(transfer);
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

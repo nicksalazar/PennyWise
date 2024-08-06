@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:habit_harmony/models/account_model.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
-import 'package:habit_harmony/screens/accounts/account_new_screen.dart';
-import 'package:habit_harmony/screens/accounts/account_new_transfer_screen.dart';
-import 'package:habit_harmony/screens/accounts/account_transfer_history_screen.dart';
 import 'package:habit_harmony/utils/icon_utils.dart';
 import 'package:habit_harmony/widgets/my_drawer.dart';
 import 'package:provider/provider.dart';
@@ -41,8 +39,12 @@ class _AccountScreenState extends State<AccountScreen> {
               style: TextStyle(fontSize: 18),
             ),
             Text(
-              'S/.320.81',
-              style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              '\S/. ${accounts.fold(0.0, (prev, account) => prev + account.balance).toString()}',
+              style: TextStyle(
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+              ),
+              textAlign: TextAlign.center,
             ),
             SizedBox(height: 20),
             Row(
@@ -52,24 +54,14 @@ class _AccountScreenState extends State<AccountScreen> {
                   icon: Icon(Icons.history),
                   label: Text('Transfer history'),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => TransferHistoryScreen(),
-                      ),
-                    );
+                    context.go("/accounts/transfer_history");
                   },
                 ),
                 ElevatedButton.icon(
                   icon: Icon(Icons.swap_horiz),
                   label: Text('New transfer'),
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CreateTransferScreen(),
-                      ),
-                    );
+                    context.go("/accounts/new_transfer");
                   },
                 ),
               ],
@@ -86,15 +78,8 @@ class _AccountScreenState extends State<AccountScreen> {
                           children: accounts
                               .map((account) => InkWell(
                                     onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              AddAccountScreen(
-                                            account: account,
-                                          ),
-                                        ),
-                                      );
+                                      context.go(
+                                          "/accounts/edit_account/${account.id}");
                                     },
                                     child: AccountListItem(
                                       icon: getIconData(account.icon),
@@ -117,13 +102,7 @@ class _AccountScreenState extends State<AccountScreen> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          // Add new account
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AddAccountScreen(),
-            ),
-          );
+          context.go('/accounts/new_account');
         },
       ),
     );

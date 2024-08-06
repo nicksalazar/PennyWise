@@ -7,10 +7,8 @@ import 'package:habit_harmony/repositories/transfer_repository.dart';
 class TransferProvider with ChangeNotifier {
   final TransferRepository _transferRepository;
   final LoadingProvider _loadingProvider;
-  final AccountProvider _accountProvider;
 
-  TransferProvider(
-      this._accountProvider, this._transferRepository, this._loadingProvider) {
+  TransferProvider(this._transferRepository, this._loadingProvider) {
     getTodayTransfers();
   }
   List<TransferModel> _transfers = [];
@@ -21,10 +19,12 @@ class TransferProvider with ChangeNotifier {
   DateTime get startDate => _startDate;
   DateTime get endDate => _endDate;
 
-  Future<void> addTransfer(TransferModel transfer) async {
+  Future<void> addTransfer(
+      TransferModel transfer, AccountProvider accountProvider) async {
     try {
       _loadingProvider.setLoading(true);
       await _transferRepository.createTransfer(transfer);
+      await accountProvider.fetchAccounts();
       notifyListeners();
     } catch (e) {
       print('Error adding transfer: $e');

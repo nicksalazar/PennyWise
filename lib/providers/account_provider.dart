@@ -90,4 +90,9 @@ class AccountProvider with ChangeNotifier {
       _loadingProvider.setLoading(false);
     }
   }
+
+  //getAccountById
+  Account getAccountById(String id) {
+    return _accounts.firstWhere((element) => element.id == id);
+  }
 }

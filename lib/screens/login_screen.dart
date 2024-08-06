@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -49,7 +50,7 @@ class _LoginScreenState extends State<LoginScreen>
         idToken: googleAuth?.idToken,
       );
       await FirebaseAuth.instance.signInWithCredential(credential);
-      Navigator.of(context).pushReplacementNamed('/home');
+      context.go('/home');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -68,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen>
           email: _emailController.text,
           password: _passwordController.text,
         );
-        Navigator.of(context).pushReplacementNamed('/home');
+        context.go('/home');
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al iniciar sesión: ${e.toString()}')),
