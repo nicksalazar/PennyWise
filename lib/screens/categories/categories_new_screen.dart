@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:habit_harmony/screens/categories/categories_icons_catalog_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:habit_harmony/models/category_model.dart';
+import 'package:habit_harmony/providers/category_provider.dart';
+import 'package:habit_harmony/utils/icon_utils.dart';
+import 'package:provider/provider.dart';
 
 class NewCategoryScreen extends StatefulWidget {
   @override
@@ -8,10 +12,18 @@ class NewCategoryScreen extends StatefulWidget {
 
 class _NewCategoryScreenState extends State<NewCategoryScreen> {
   bool isExpense = true;
-  Color selectedColor = Colors.pink;
-
+  String _name = '';
+  String _type = 'expense';
+  String _selectedIcon = 'help';
+  Color _selectedColor = Colors.red;
+  final _formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
+    final categories = categorizedIcons.entries
+        .map((e) => e.value)
+        .expand((element) => element)
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Create Category'),
@@ -22,151 +34,193 @@ class _NewCategoryScreenState extends State<NewCategoryScreen> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Category Name',
-                hintText: 'Enter a category name',
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextFormField(
+                decoration: InputDecoration(
+                  labelText: 'Category Name',
+                  hintText: 'Enter a category name',
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter a name';
+                  }
+                  return null;
+                },
+                onSaved: (value) {
+                  _name = value!;
+                },
               ),
-            ),
-            SizedBox(height: 16),
-            Row(
-              children: [
-                Radio(
-                  value: true,
-                  groupValue: isExpense,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      isExpense = value!;
-                    });
-                  },
-                ),
-                Text('Expenses'),
-                Radio(
-                  value: false,
-                  groupValue: isExpense,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      isExpense = value!;
-                    });
-                  },
-                ),
-                Text('Income'),
-              ],
-            ),
-            SizedBox(height: 16),
-            Text('Planned outlay'),
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'PEN per month',
-                suffixText: 'PEN per month',
-              ),
-            ),
-            SizedBox(height: 16),
-            Text('Icons'),
-            GridView.count(
-              shrinkWrap: true,
-              crossAxisCount: 4,
-              children: [
-                IconButton(icon: Icon(Icons.receipt), onPressed: () {}),
-                IconButton(icon: Icon(Icons.flight), onPressed: () {}),
-                IconButton(icon: Icon(Icons.local_offer), onPressed: () {}),
-                IconButton(icon: Icon(Icons.pets), onPressed: () {}),
-                IconButton(icon: Icon(Icons.tv), onPressed: () {}),
-                IconButton(icon: Icon(Icons.restaurant), onPressed: () {}),
-                IconButton(icon: Icon(Icons.build), onPressed: () {}),
-                IconButton(
-                    icon: Icon(Icons.local_laundry_service), onPressed: () {}),
-                IconButton(icon: Icon(Icons.beach_access), onPressed: () {}),
-                IconButton(icon: Icon(Icons.videogame_asset), onPressed: () {}),
-                IconButton(icon: Icon(Icons.directions_car), onPressed: () {}),
-                IconButton(icon: Icon(Icons.local_hospital), onPressed: () {}),
-                IconButton(icon: Icon(Icons.book), onPressed: () {}),
-                IconButton(icon: Icon(Icons.person), onPressed: () {}),
-                IconButton(icon: Icon(Icons.directions_run), onPressed: () {}),
-                //floating button add
-                FloatingActionButton(
-                  backgroundColor: Colors.orange,
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => IconsCatalog()),
-                    );
-                  },
-                  child: Icon(Icons.add),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-            Text('Color'),
-            Wrap(
-              spacing: 8,
-              children: [
-                ColorButton(
-                    color: Colors.pink,
-                    isSelected: selectedColor == Colors.pink,
-                    onTap: () => setColor(Colors.pink)),
-                ColorButton(
-                    color: Colors.blue,
-                    isSelected: selectedColor == Colors.blue,
-                    onTap: () => setColor(Colors.blue)),
-                ColorButton(
-                    color: Colors.yellow,
-                    isSelected: selectedColor == Colors.yellow,
-                    onTap: () => setColor(Colors.yellow)),
-                ColorButton(
-                    color: Colors.green,
-                    isSelected: selectedColor == Colors.green,
-                    onTap: () => setColor(Colors.green)),
-                ColorButton(
-                    color: Colors.red,
-                    isSelected: selectedColor == Colors.red,
-                    onTap: () => setColor(Colors.red)),
-                ColorButton(
-                    color: Colors.cyan,
-                    isSelected: selectedColor == Colors.cyan,
-                    onTap: () => setColor(Colors.cyan)),
-                ColorButton(
-                    color: Colors.grey,
-                    isSelected: selectedColor == Colors.grey,
-                    onTap: () => setColor(Colors.grey)),
-              ],
-            ),
-            //rectangle button with rounder yellow
-            SizedBox(
-              height: 16,
-            ),
-            Center(
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.yellow,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Radio(
+                    value: true,
+                    groupValue: isExpense,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        isExpense = value!;
+                      });
+                    },
                   ),
+                  Text('Expenses'),
+                  Radio(
+                    value: false,
+                    groupValue: isExpense,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        isExpense = value!;
+                      });
+                    },
+                  ),
+                  Text('Income'),
+                ],
+              ),
+              SizedBox(height: 16),
+              Text('Icons'),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  childAspectRatio: 1,
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: Text(
-                    'Add',
-                    style: TextStyle(
-                      color: Colors.black,
+                itemCount: (categories.length * 0.08).ceil() + 1,
+                itemBuilder: (context, index) {
+                  if (index == (categories.length * 0.08).ceil()) {
+                    return InkWell(
+                      onTap: () async {
+                        final result = await context.push(
+                          '/categories/icon_catalog',
+                        );
+                        print("here is result $result");
+                        if (result != null && result is String) {
+                          setState(() {
+                            _selectedIcon = result;
+                          });
+                        }
+                      },
+                      child: Icon(
+                        Icons.more_horiz,
+                        size: 40,
+                      ),
+                    );
+                  }
+
+                  final iconName = categories[index];
+                  final iconData = getIconDataByName(iconName);
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        _selectedIcon = iconName;
+                      });
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: _selectedIcon == iconName
+                          ? _selectedColor
+                          : Colors.grey[300],
+                      child: Icon(
+                        iconData,
+                        color: _selectedIcon == iconName
+                            ? Colors.white
+                            : Colors.black,
+                        size: 30,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              SizedBox(height: 16),
+              Text('Color'),
+              Wrap(
+                spacing: 8,
+                children: [
+                  ColorButton(
+                      color: Colors.pink,
+                      isSelected: _selectedColor == Colors.pink,
+                      onTap: () => setColor(Colors.pink)),
+                  ColorButton(
+                      color: Colors.blue,
+                      isSelected: _selectedColor == Colors.blue,
+                      onTap: () => setColor(Colors.blue)),
+                  ColorButton(
+                      color: Colors.yellow,
+                      isSelected: _selectedColor == Colors.yellow,
+                      onTap: () => setColor(Colors.yellow)),
+                  ColorButton(
+                      color: Colors.green,
+                      isSelected: _selectedColor == Colors.green,
+                      onTap: () => setColor(Colors.green)),
+                  ColorButton(
+                      color: Colors.red,
+                      isSelected: _selectedColor == Colors.red,
+                      onTap: () => setColor(Colors.red)),
+                  ColorButton(
+                      color: Colors.cyan,
+                      isSelected: _selectedColor == Colors.cyan,
+                      onTap: () => setColor(Colors.cyan)),
+                  ColorButton(
+                      color: Colors.grey,
+                      isSelected: _selectedColor == Colors.grey,
+                      onTap: () => setColor(Colors.grey)),
+                ],
+              ),
+              //rectangle button with rounder yellow
+              SizedBox(
+                height: 16,
+              ),
+              Center(
+                child: ElevatedButton(
+                  onPressed: () {
+                    _submitForm();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.yellow,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Text(
+                      'Add',
+                      style: TextStyle(
+                        color: Colors.black,
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
+  void _submitForm() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      final newCategory = Category(
+        id: '',
+        name: _name,
+        icon: _selectedIcon,
+        color:
+            '#${_selectedColor.value.toRadixString(16).substring(2).toUpperCase()}',
+        type: isExpense ? 'expense' : 'income',
+      );
+      Provider.of<CategoryProvider>(context, listen: false)
+          .addCategory(newCategory);
+      context.pop();
+    }
+  }
+
   void setColor(Color color) {
     setState(() {
-      selectedColor = color;
+      _selectedColor = color;
     });
   }
 }

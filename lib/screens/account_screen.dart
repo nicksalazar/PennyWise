@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:habit_harmony/models/account_model.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
 import 'package:habit_harmony/providers/transfer_provider.dart';
-import 'package:habit_harmony/screens/accounts/account_transfer_history_screen.dart';
+
 import 'package:provider/provider.dart';
 
 class AccountsScreen extends StatefulWidget {

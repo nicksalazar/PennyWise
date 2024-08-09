@@ -68,6 +68,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                   orElse: () => Category(
                       id: '',
                       name: 'Unknown',
+                      icon: "help",
                       color: '#CCCCCC',
                       type: "expense"),
                 );

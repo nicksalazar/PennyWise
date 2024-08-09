@@ -92,7 +92,7 @@ class _AddBudgetFormState extends State<AddBudgetForm> {
       //get category name
       final category = _categorias.firstWhere(
         (element) => element.id == _categorySelect,
-        orElse: () => (Category(id: '', name: '', color: '', type: '')),
+        orElse: () => (Category(id: '', name: '', icon: '', color: '', type: '')),
       );
       final account;
       if (widget.initialCategory == "income") {

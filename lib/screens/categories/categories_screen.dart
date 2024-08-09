@@ -1,8 +1,61 @@
 import 'package:flutter/material.dart';
-import 'package:habit_harmony/screens/categories/categories_new_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:habit_harmony/models/category_model.dart';
+import 'package:habit_harmony/providers/category_provider.dart';
+import 'package:habit_harmony/utils/icon_utils.dart';
 import 'package:habit_harmony/widgets/my_drawer.dart';
+import 'package:provider/provider.dart';
 
-class CategoriesScreen extends StatelessWidget {
+class CategoriesScreen extends StatefulWidget {
+  @override
+  State<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends State<CategoriesScreen> {
+  String _selectedTab = 'expense';
+
+  void _selectTab(String tab) {
+    setState(() {
+      _selectedTab = tab;
+    });
+  }
+
+  void _deleteCategory(Category category) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirmar eliminación'),
+          content: Text('¿Estás seguro de que deseas eliminar esta categoría?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+            ),
+            TextButton(
+              child: Text('Eliminar'),
+              onPressed: () {
+                Provider.of<CategoryProvider>(context, listen: false)
+                    .deleteCategory(category.id);
+                Navigator.of(context).pop(); // Cerrar el diálogo
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CategoryProvider>(context, listen: false);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,113 +69,101 @@ class CategoriesScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Container(
-            child: Row(
-              children: [
-                Expanded(
-                  child: ElevatedButton(
-                    child: Text('EXPENSES'),
-                    onPressed: () {},
-                  ),
+      body: Consumer<CategoryProvider>(
+          builder: (context, categoryProvider, child) {
+        final categories = categoryProvider.categories
+            .where((category) => category.type == _selectedTab)
+            .toList();
+        return Column(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                borderRadius:
+                    BorderRadius.vertical(bottom: Radius.circular(20)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        child: Text('EXPENSES'),
+                        onPressed: () => _selectTab('expense'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _selectedTab == 'expense'
+                              ? Colors.amber
+                              : Colors.white,
+                          foregroundColor: _selectedTab == 'expense'
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: ElevatedButton(
+                        child: Text('INCOME'),
+                        onPressed: () => _selectTab('income'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _selectedTab == 'income'
+                              ? Colors.amber
+                              : Colors.white,
+                          foregroundColor: _selectedTab == 'income'
+                              ? Colors.white
+                              : Colors.black,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-                Expanded(
-                  child: ElevatedButton(
-                    child: Text('INCOME'),
-                    onPressed: () {},
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-          Expanded(
-            child: GridView.count(
-              crossAxisCount: 4,
-              children: [
-                CategoryIcon(
-                    color: Colors.red, icon: Icons.favorite, label: 'Health'),
-                CategoryIcon(
-                    color: Colors.green,
-                    icon: Icons.account_balance_wallet,
-                    label: 'Leisure'),
-                CategoryIcon(
-                    color: Colors.blue, icon: Icons.home, label: 'Home'),
-                CategoryIcon(
-                    color: Colors.yellow,
-                    icon: Icons.restaurant,
-                    label: 'Cafe'),
-                CategoryIcon(
-                    color: Colors.pink, icon: Icons.school, label: 'Education'),
-                CategoryIcon(
-                    color: Colors.lightGreen,
-                    icon: Icons.card_giftcard,
-                    label: 'Gifts'),
-                CategoryIcon(
-                    color: Colors.lightBlue,
-                    icon: Icons.shopping_cart,
-                    label: 'Groceries'),
-                CategoryIcon(
-                    color: Colors.red,
-                    icon: Icons.family_restroom,
-                    label: 'Family'),
-                CategoryIcon(
-                    color: Colors.green,
-                    icon: Icons.fitness_center,
-                    label: 'Workout'),
-                CategoryIcon(
-                    color: Colors.blue,
-                    icon: Icons.directions_bus,
-                    label: 'Transportation'),
-                CategoryIcon(
-                    color: Colors.red, icon: Icons.help, label: 'Other'),
-                CategoryIcon(
-                    color: Colors.green,
-                    icon: Icons.sports_soccer,
-                    label: 'Sport'),
-                CategoryIcon(
-                    color: Colors.pink,
-                    icon: Icons.directions_bike,
-                    label: 'Bike'),
-                CategoryIcon(
-                    color: Colors.orange,
-                    icon: Icons.fastfood,
-                    label: 'Comida afuera'),
-                CategoryIcon(
-                    color: Colors.purple,
-                    icon: Icons.videogame_asset,
-                    label: 'Streaming'),
-                CategoryIcon(
-                    color: Colors.green,
-                    icon: Icons.trending_up,
-                    label: 'Debt'),
-                CategoryIcon(
-                    color: Colors.yellow,
-                    icon: Icons.content_cut,
-                    label: 'Haircut'),
-                CategoryIcon(
-                    color: Colors.pink,
-                    icon: Icons.local_bar,
-                    label: 'Entertainment'),
-                InkWell(
-                  onTap: () {
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return NewCategoryScreen();
-                    }));
-                  },
-                  child: CategoryIcon(
-                    color: Colors.orange,
-                    icon: Icons.add,
-                    label: 'Create',
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 4,
+                padding: EdgeInsets.all(16),
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                children: [
+                  ...categories.map(
+                    (category) => GestureDetector(
+                      onLongPress: () => _deleteCategory(category),
+                      child: CategoryIcon(
+                        color: _hexToColor(category.color),
+                        icon: getIconDataByName(category.icon),
+                        label: category.name,
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                  //add icon categoyy
+                  InkWell(
+                    onTap: () {
+                      context.go('/categories/new_category');
+                    },
+                    child: CategoryIcon(
+                      color: Colors.yellow,
+                      icon: Icons.add,
+                      label: 'add',
+                    ),
+                  )
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }),
     );
+  }
+}
+
+Color _hexToColor(String hex) {
+  try {
+    return Color(int.parse(hex.replaceFirst('#', '0xff')));
+  } catch (e) {
+    // Log the error or handle it as needed
+    print('Invalid hex color: $hex');
+    // Return a default color (e.g., black) in case of error
+    return Color(0xFF000000);
   }
 }
 
@@ -145,10 +186,17 @@ class CategoryIcon extends StatelessWidget {
       children: [
         CircleAvatar(
           backgroundColor: color,
-          child: Icon(icon, color: Colors.white),
+          radius: 25,
+          child: Icon(icon, color: Colors.white, size: 30),
         ),
-        SizedBox(height: 4),
-        Text(label, style: TextStyle(fontSize: 12)),
+        SizedBox(height: 8),
+        Text(
+          label,
+          style: TextStyle(fontSize: 12),
+          textAlign: TextAlign.center,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
       ],
     );
   }

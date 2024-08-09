@@ -82,7 +82,7 @@ class _AccountScreenState extends State<AccountScreen> {
                                           "/accounts/edit_account/${account.id}");
                                     },
                                     child: AccountListItem(
-                                      icon: getIconData(account.icon),
+                                      icon: getIconDataByName(account.icon),
                                       name: account.name,
                                       balance: 'S/.${account.balance}',
                                       color: Color(

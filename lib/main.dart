@@ -5,19 +5,19 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_harmony/providers/Income_provider.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
+import 'package:habit_harmony/providers/category_provider.dart';
 import 'package:habit_harmony/providers/expense_provider.dart';
-import 'package:habit_harmony/providers/hydration_provider.dart';
 import 'package:habit_harmony/providers/loading_provider.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
 import 'package:habit_harmony/providers/transfer_provider.dart';
 import 'package:habit_harmony/repositories/account_repository.dart';
-import 'package:habit_harmony/repositories/hydration_repository.dart';
 import 'package:habit_harmony/repositories/transfer_repository.dart';
 import 'package:habit_harmony/screens/accounts/account_new_screen.dart';
 import 'package:habit_harmony/screens/accounts/account_new_transfer_screen.dart';
 import 'package:habit_harmony/screens/accounts/account_screen.dart';
 import 'package:habit_harmony/screens/accounts/account_transfer_history_screen.dart';
 import 'package:habit_harmony/screens/auth_wrapper.dart';
+import 'package:habit_harmony/screens/categories/categories_icons_catalog_screen.dart';
 import 'package:habit_harmony/screens/categories/categories_screen.dart';
 import 'package:habit_harmony/screens/home/home_screen.dart';
 import 'package:habit_harmony/screens/login_screen.dart';
@@ -59,14 +59,6 @@ void main() async {
           create: (_) => LoadingProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => HydrationProvider(
-            HydrationRepository()
-              ..fetchDrinkEntries(
-                DateTime.now(),
-              ),
-          ),
-        ),
-        ChangeNotifierProvider(
           create: (_) => TransactionProvider(),
         ),
         ChangeNotifierProvider(
@@ -91,6 +83,9 @@ void main() async {
             TransferRepository(),
             Provider.of<LoadingProvider>(context, listen: false),
           ),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => CategoryProvider(),
         ),
       ],
       child: MyApp(),
@@ -173,10 +168,16 @@ class MyApp extends StatelessWidget {
       GoRoute(
         path: '/categories',
         builder: (context, state) => CategoriesScreen(),
-      ),
-      GoRoute(
-        path: '/new_category',
-        builder: (context, state) => NewCategoryScreen(),
+        routes: [
+          GoRoute(
+            path: 'new_category',
+            builder: (context, state) => NewCategoryScreen(),
+          ),
+          GoRoute(
+            path: 'icon_catalog',
+            builder: (context, state) => IconsCatalogScreen(),
+          )
+        ],
       ),
       GoRoute(
         path: '/accounts',
