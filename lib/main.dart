@@ -3,10 +3,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habit_harmony/providers/Income_provider.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
 import 'package:habit_harmony/providers/category_provider.dart';
-import 'package:habit_harmony/providers/expense_provider.dart';
 import 'package:habit_harmony/providers/loading_provider.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
 import 'package:habit_harmony/providers/transfer_provider.dart';
@@ -16,14 +14,16 @@ import 'package:habit_harmony/screens/accounts/account_new_screen.dart';
 import 'package:habit_harmony/screens/accounts/account_new_transfer_screen.dart';
 import 'package:habit_harmony/screens/accounts/account_screen.dart';
 import 'package:habit_harmony/screens/accounts/account_transfer_history_screen.dart';
-import 'package:habit_harmony/screens/auth_wrapper.dart';
+import 'package:habit_harmony/screens/auth/auth_wrapper.dart';
 import 'package:habit_harmony/screens/categories/categories_icons_catalog_screen.dart';
 import 'package:habit_harmony/screens/categories/categories_screen.dart';
 import 'package:habit_harmony/screens/home/home_screen.dart';
-import 'package:habit_harmony/screens/login_screen.dart';
+import 'package:habit_harmony/screens/auth/login_screen.dart';
 import 'package:habit_harmony/screens/categories/categories_new_screen.dart';
-import 'package:habit_harmony/screens/register_screen.dart';
+import 'package:habit_harmony/screens/auth/register_screen.dart';
 import 'package:habit_harmony/screens/splash_screen.dart';
+import 'package:habit_harmony/screens/transactions/transaction_detail_screen.dart';
+import 'package:habit_harmony/screens/transactions/transaction_screen.dart';
 import 'package:habit_harmony/themes/app_theme.dart';
 import 'package:habit_harmony/widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
@@ -62,16 +62,6 @@ void main() async {
           create: (_) => TransactionProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => ExpenseProvider()
-            ..fetchCategories()
-            ..fetchExpenses()
-            ..fetchAccounts(),
-        ),
-        ChangeNotifierProvider(
-            create: (_) => IncomeProvider()
-              ..fetchCategories()
-              ..fetchIncomes()),
-        ChangeNotifierProvider(
           create: (context) => AccountProvider(
             AccountsRepository(),
             TransferRepository(),
@@ -85,7 +75,9 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider(
-          create: (context) => CategoryProvider(),
+          create: (context) => CategoryProvider(
+            Provider.of<LoadingProvider>(context, listen: false),
+          ),
         ),
       ],
       child: MyApp(),
@@ -154,8 +146,25 @@ class MyApp extends StatelessWidget {
         builder: (context, state) => LoginScreen(),
       ),
       GoRoute(
-        path: '/home',
-        builder: (context, state) => ExpenseTrackerApp(),
+        path: '/home', //transactions
+        builder: (context, state) => HomeScreen(),
+        routes: [
+          GoRoute(
+            path: 'new_transaction/:transactionType',
+            builder: (context, state) {
+              final transactionType = state.pathParameters['transactionType'];
+              return TransactionScreen(
+                  initialTransactionType: transactionType ?? 'expense');
+            },
+          ),
+          //transaction details
+          GoRoute(
+            path: 'transaction_detail/:id',
+            builder: (context, state) => TransactionDetailScreen(
+              transactionId: state.pathParameters['id']!,
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: '/register',

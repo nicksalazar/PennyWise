@@ -5,12 +5,12 @@ import '../repositories/category_repository.dart';
 
 class CategoryProvider with ChangeNotifier {
   final CategoryRepository _categoryRepository = CategoryRepository();
-  final LoadingProvider _loadingProvider = LoadingProvider();
+  final LoadingProvider _loadingProvider;
   List<Category> _categories = [];
 
   List<Category> get categories => _categories;
 
-  CategoryProvider() {
+  CategoryProvider(this._loadingProvider) {
     _initializeCategories();
   }
 

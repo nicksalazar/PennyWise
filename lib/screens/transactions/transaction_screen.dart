@@ -1,46 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:habit_harmony/models/transaction_model.dart';
+import 'package:habit_harmony/providers/transaction_provider.dart';
+import 'package:habit_harmony/utils/icon_utils.dart';
+import 'package:provider/provider.dart';
+import 'package:habit_harmony/providers/account_provider.dart';
+import 'package:habit_harmony/providers/category_provider.dart';
+import 'package:habit_harmony/models/account_model.dart';
+import 'package:habit_harmony/models/category_model.dart';
 import 'package:habit_harmony/screens/transactions/calculator_screen.dart';
 import 'package:habit_harmony/themes/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class TransactionScreen extends StatefulWidget {
+  final String initialTransactionType;
+
+  TransactionScreen({Key? key, required this.initialTransactionType})
+      : super(key: key);
   @override
   _TransactionScreenState createState() => _TransactionScreenState();
 }
 
 class _TransactionScreenState extends State<TransactionScreen> {
+  final _formKey = GlobalKey<FormState>();
   bool isExpense = true;
-  String selectedCategory = '';
+  Account? selectedAccount;
+  Category? selectedCategory;
   TextEditingController amountController = TextEditingController();
   TextEditingController commentController = TextEditingController();
+  DateTime selectedDate = DateTime.now();
 
-  final List<Map<String, dynamic>> categories = [
-    {'name': 'Health', 'icon': Icons.favorite, 'color': Colors.red},
-    {'name': 'Leisure', 'icon': Icons.wallet, 'color': Colors.green},
-    {'name': 'Home', 'icon': Icons.home, 'color': Colors.blue},
-    {'name': 'Cafe', 'icon': Icons.restaurant, 'color': Colors.orange},
-    {'name': 'Education', 'icon': Icons.school, 'color': Colors.purple},
-    {
-      'name': 'Groceries',
-      'icon': Icons.shopping_basket,
-      'color': Colors.lightBlue
-    },
-    {'name': 'Family', 'icon': Icons.family_restroom, 'color': Colors.red},
-    {'name': 'More', 'icon': Icons.more_horiz, 'color': Colors.grey},
-  ];
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      Provider.of<AccountProvider>(context, listen: false).fetchAccounts();
+      Provider.of<CategoryProvider>(context, listen: false);
+    });
+    isExpense = widget.initialTransactionType == 'expense';
+  }
 
   @override
   Widget build(BuildContext context) {
+    final accountProvider = Provider.of<AccountProvider>(context);
+    final categoryProvider = Provider.of<CategoryProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Transactions'),
+        title: Text('Add Transaction'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
+      body: Form(
+        key: _formKey,
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,19 +64,15 @@ class _TransactionScreenState extends State<TransactionScreen> {
               SizedBox(height: 20),
               _buildAmountInput(),
               SizedBox(height: 20),
-              Text('Account', style: TextStyle(color: Colors.grey)),
-              Text('Not selected', style: TextStyle(color: Colors.green)),
+              _buildAccountDropdown(accountProvider),
               SizedBox(height: 20),
-              Text('Categories', style: TextStyle(color: Colors.grey)),
-              _buildCategoryGrid(),
+              _buildCategoryGrid(categoryProvider),
               SizedBox(height: 20),
               _buildDateSelection(),
               SizedBox(height: 20),
-              _buildTagsSection(),
-              SizedBox(height: 20),
+              // _buildTagsSection(),
+              // SizedBox(height: 20),
               _buildCommentSection(),
-              SizedBox(height: 20),
-              _buildPhotoSection(),
               SizedBox(height: 20),
               _buildAddButton(),
             ],
@@ -129,7 +140,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
     return Row(
       children: [
         Expanded(
-          child: TextField(
+          child: TextFormField(
             controller: amountController,
             keyboardType: TextInputType.number,
             style: TextStyle(fontSize: 24),
@@ -137,17 +148,94 @@ class _TransactionScreenState extends State<TransactionScreen> {
               hintText: '0',
               border: InputBorder.none,
             ),
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter an amount';
+              }
+              return null;
+            },
           ),
         ),
         Text('PEN', style: TextStyle(fontSize: 24, color: Colors.green)),
         IconButton(
           icon: Icon(Icons.calculate, color: Colors.green),
           onPressed: () {
-            //NAVIGATOR PUSSH CALCULATOR_sCREEN
             Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => CalculatorScreen(),
+              MaterialPageRoute(builder: (context) => CalculatorScreen()),
+            );
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAccountDropdown(AccountProvider accountProvider) {
+    return DropdownButtonFormField<Account>(
+      value: selectedAccount,
+      hint: Text('Select Account'),
+      items: accountProvider.accounts.map((Account account) {
+        return DropdownMenuItem<Account>(
+          value: account,
+          child: Text("${account.name} - PEN S/. ${account.balance}"),
+        );
+      }).toList(),
+      onChanged: (Account? newValue) {
+        setState(() {
+          selectedAccount = newValue;
+        });
+      },
+      validator: (value) {
+        if (value == null) {
+          return 'Please select an account';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildCategoryGrid(CategoryProvider categoryProvider) {
+    List<Category> categories = categoryProvider.categories
+        .where(
+            (category) => category.type == (isExpense ? 'expense' : 'income'))
+        .toList();
+    print("categories ${categories.length}");
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Categories', style: TextStyle(color: Colors.grey)),
+        SizedBox(height: 10),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            childAspectRatio: 1,
+          ),
+          itemCount: categories.length,
+          itemBuilder: (context, index) {
+            final category = categories[index];
+            final isSelected = selectedCategory == category;
+            return GestureDetector(
+              onTap: () => setState(() => selectedCategory = category),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? const Color.fromARGB(255, 76, 175, 135)
+                          : Color(int.parse(
+                              category.color.replaceFirst('#', '0xff'))),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(getIconDataByName(category.icon),
+                        color: Colors.white),
+                  ),
+                  SizedBox(height: 5),
+                  Text(category.name, style: TextStyle(fontSize: 12)),
+                ],
               ),
             );
           },
@@ -156,68 +244,56 @@ class _TransactionScreenState extends State<TransactionScreen> {
     );
   }
 
-  Widget _buildCategoryGrid() {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 4,
-        childAspectRatio: 1,
-      ),
-      itemCount: categories.length,
-      itemBuilder: (context, index) {
-        final category = categories[index];
-        return GestureDetector(
-          onTap: () => setState(() => selectedCategory = category['name']),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                padding: EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: category['color'],
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(category['icon'], color: Colors.white),
-              ),
-              SizedBox(height: 5),
-              Text(category['name'], style: TextStyle(fontSize: 12)),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   Widget _buildDateSelection() {
     final now = DateTime.now();
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDateButton(now, 'today'),
-        SizedBox(width: 10),
-        _buildDateButton(now.subtract(Duration(days: 1)), 'yesterday'),
-        SizedBox(width: 10),
-        _buildDateButton(now.subtract(Duration(days: 2)), 'two days ago'),
-        SizedBox(width: 10),
-        IconButton(
-          icon: Icon(Icons.calendar_today, color: Colors.green),
-          onPressed: () {
-            // TODO: Implement date picker
-          },
+        Text('Date', style: TextStyle(color: Colors.grey)),
+        SizedBox(height: 10),
+        Row(
+          children: [
+            _buildDateButton(now, 'Today'),
+            SizedBox(width: 10),
+            _buildDateButton(now.subtract(Duration(days: 1)), 'Yesterday'),
+            SizedBox(width: 10),
+            _buildDateButton(now.subtract(Duration(days: 2)), '2 days ago'),
+            SizedBox(width: 10),
+            IconButton(
+              icon: Icon(Icons.calendar_today, color: Colors.green),
+              onPressed: () async {
+                final DateTime? picked = await showDatePicker(
+                  context: context,
+                  initialDate: selectedDate,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2100),
+                );
+                if (picked != null && picked != selectedDate) {
+                  setState(() {
+                    selectedDate = picked;
+                  });
+                }
+              },
+            ),
+          ],
         ),
       ],
     );
   }
 
   Widget _buildDateButton(DateTime date, String label) {
+    final isSelected = DateUtils.isSameDay(date, selectedDate);
     return ElevatedButton(
       child: Text('${date.day}/${date.month}\n$label'),
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.white,
+        backgroundColor: isSelected ? Colors.green : Colors.white,
+        foregroundColor: isSelected ? Colors.white : Colors.black,
         textStyle: TextStyle(fontSize: 12),
       ),
       onPressed: () {
-        // TODO: Implement date selection
+        setState(() {
+          selectedDate = date;
+        });
       },
     );
   }
@@ -245,33 +321,13 @@ class _TransactionScreenState extends State<TransactionScreen> {
   }
 
   Widget _buildCommentSection() {
-    return TextField(
+    return TextFormField(
       controller: commentController,
       decoration: InputDecoration(
         hintText: 'Comment',
         border: UnderlineInputBorder(),
       ),
       maxLines: 3,
-    );
-  }
-
-  Widget _buildPhotoSection() {
-    return Row(
-      children: List.generate(
-          3,
-          (index) => Expanded(
-                child: AspectRatio(
-                  aspectRatio: 1,
-                  child: Container(
-                    margin: EdgeInsets.all(5),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[300],
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(Icons.add, color: Colors.white),
-                  ),
-                ),
-              )),
     );
   }
 
@@ -285,7 +341,26 @@ class _TransactionScreenState extends State<TransactionScreen> {
           padding: EdgeInsets.symmetric(vertical: 15),
         ),
         onPressed: () {
-          // TODO: Implement add transaction functionality
+          if (_formKey.currentState!.validate() && selectedCategory != null) {
+            // TODO: Implement add transaction functionality
+            Provider.of<TransactionProvider>(context, listen: false)
+                .addTransaction(
+              TransactionModel(
+                id: '',
+                description: commentController.text,
+                date: selectedDate,
+                categoryId: selectedCategory!.id,
+                accountId: selectedAccount!.id,
+                amount: double.parse(amountController.text),
+                transactionType: isExpense ? 'expense' : 'income',
+              ),
+            );
+            Navigator.of(context).pop();
+          } else if (selectedCategory == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Please select a category')),
+            );
+          }
         },
       ),
     );

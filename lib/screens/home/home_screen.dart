@@ -1,9 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:go_router/go_router.dart';
+import 'package:habit_harmony/models/account_model.dart';
+import 'package:habit_harmony/models/category_model.dart';
+import 'package:habit_harmony/providers/account_provider.dart';
+import 'package:habit_harmony/providers/category_provider.dart';
+import 'package:habit_harmony/providers/transaction_provider.dart';
 import 'package:habit_harmony/screens/transactions/transaction_screen.dart';
+import 'package:habit_harmony/utils/icon_utils.dart';
 import 'package:habit_harmony/widgets/my_drawer.dart';
+import 'package:provider/provider.dart';
 
-class ExpenseTrackerApp extends StatelessWidget {
+class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ExpenseTrackerHome();
@@ -29,20 +37,16 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
     'Year',
     'Period'
   ];
-  final List<ExpenseItem> _expenseData = [
-    ExpenseItem('Debt', 29, 100, Color(0xFF4CAF50), Icons.credit_card),
-    ExpenseItem('Bike', 28, 95, Color(0xFFE91E63), Icons.pedal_bike),
-    ExpenseItem('Comida afuera', 22, 74, Color(0xFF2196F3), Icons.restaurant),
-    ExpenseItem('Groceries', 12, 41.97, Color(0xFF3F51B5), Icons.shopping_cart),
-    ExpenseItem('Haircut', 4, 15, Color(0xFFFFC107), Icons.content_cut),
-    ExpenseItem('Streaming', 3, 11, Color(0xFFFF5722), Icons.movie),
-    ExpenseItem(
-        'Transportation', 2, 6, Color(0xFF03A9F4), Icons.directions_bus),
-  ];
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      Provider.of<TransactionProvider>(context, listen: false)
+          .fetchTransactions();
+      Provider.of<CategoryProvider>(context, listen: false);
+      Provider.of<AccountProvider>(context, listen: false);
+    });
     _tabController = TabController(length: 2, vsync: this);
     _scrollController.addListener(_onScroll);
   }
@@ -69,9 +73,7 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.monetization_on,
-              ),
+              Icon(Icons.monetization_on),
               Padding(padding: EdgeInsets.only(left: 8)),
               DropdownButton<String>(
                 value: 'Total',
@@ -101,78 +103,163 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildExpensesTab(),
-          Center(child: Text('Income Tab')),
+          _buildTransactionsTab('expense'),
+          _buildTransactionsTab('income'),
         ],
       ),
       drawer: MyDrawer(),
     );
   }
 
-  Widget _buildExpensesTab() {
-    return ListView(
-      controller: _scrollController,
-      children: [
-        Card(
-          color: Theme.of(context).cardColor,
-          margin: EdgeInsets.all(16),
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: _periodOptions
-                      .map((period) => GestureDetector(
-                            onTap: () =>
-                                setState(() => _selectedPeriod = period),
-                            child: Text(
-                              period,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color: _selectedPeriod == period
-                                        ? Theme.of(context)
-                                            .colorScheme
-                                            .secondary
-                                        : Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.color,
-                                  ),
-                            ),
-                          ))
-                      .toList(),
+  Widget _buildTransactionsTab(String transactionType) {
+    return Consumer3<CategoryProvider, TransactionProvider, AccountProvider>(
+      builder: (context, categoryProvider, transactionProvider, accountProvider,
+          child) {
+        final categories = categoryProvider.categories;
+        final accounts = accountProvider.accounts;
+        final transactions = transactionProvider.getFilteredTransactions(
+          transactionType: transactionType,
+          period: _selectedPeriod,
+        );
+
+        // Group transactions by category and sum amounts
+        Map<String, double> categoryTotals = {};
+        for (var transaction in transactions) {
+          categoryTotals[transaction.categoryId] =
+              (categoryTotals[transaction.categoryId] ?? 0) +
+                  transaction.amount;
+        }
+
+        final categoryItems = categoryTotals.entries.map((entry) {
+          final category = categories.firstWhere(
+            (category) => category.id == entry.key,
+            orElse: () => Category(
+                id: '',
+                name: 'Unknown',
+                color: '#000000',
+                icon: 'help',
+                type: transactionType),
+          );
+          return ExpenseItem(
+            category.id,
+            category.name,
+            0, // We'll calculate this later
+            entry.value,
+            Color(int.parse(category.color.replaceFirst('#', '0xff'))),
+            getIconDataByName(category.icon),
+          );
+        }).toList();
+
+        // Calculate percentages
+        double total = categoryItems.fold(0, (sum, item) => sum + item.amount);
+        categoryItems.forEach((item) {
+          item.percentage = ((item.amount / total) * 100).round();
+        });
+
+        return ListView(
+          controller: _scrollController,
+          children: [
+            Card(
+              color: Theme.of(context).cardColor,
+              margin: EdgeInsets.all(16),
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: _periodOptions
+                          .map((period) => GestureDetector(
+                                onTap: () =>
+                                    setState(() => _selectedPeriod = period),
+                                child: Text(
+                                  period,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: _selectedPeriod == period
+                                            ? Theme.of(context)
+                                                .colorScheme
+                                                .secondary
+                                            : Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium
+                                                ?.color,
+                                      ),
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                    SizedBox(height: 16),
+                    Text(_getDateRangeText()),
+                    SizedBox(height: 16),
+                    AnimatedContainer(
+                      duration: Duration(milliseconds: 300),
+                      height: _isScrolled ? 100 : 200,
+                      child: _isScrolled
+                          ? _buildCompactChart(categoryItems)
+                          : _buildPieChart(categoryItems),
+                    ),
+                    SizedBox(height: 16),
+                    Align(
+                      alignment: Alignment.bottomRight,
+                      child: FloatingActionButton(
+                        onPressed: () {
+                          context.go('/home/new_transaction/$transactionType');
+                        },
+                        child: Icon(Icons.add),
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 16),
-                Text('Jul 28 - Aug 3'),
-                SizedBox(height: 16),
-                _isScrolled ? _buildBarChart() : _buildPieChart(),
-                SizedBox(height: 16),
-                Align(
-                  alignment: Alignment.bottomRight,
-                  child: FloatingActionButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => TransactionScreen()),
-                      );
-                    },
-                    child: Icon(Icons.add),
-                  ),
-                ),
-              ],
+              ),
             ),
-          ),
-        ),
-        ..._expenseData.map(_buildExpenseItem).toList(),
-      ],
+            ...categoryItems
+                .map((item) => _buildExpenseItem(item, transactionType)),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildPieChart() {
+  String _getDateRangeText() {
+    final now = DateTime.now();
+    switch (_selectedPeriod) {
+      case 'Day':
+        return '${now.day} ${_getMonthName(now.month)}';
+      case 'Week':
+        final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+        final endOfWeek = startOfWeek.add(Duration(days: 6));
+        return '${startOfWeek.day} - ${endOfWeek.day} ${_getMonthName(endOfWeek.month)}';
+      case 'Month':
+        return '${_getMonthName(now.month)} ${now.year}';
+      case 'Year':
+        return '${now.year}';
+      default:
+        return '';
+    }
+  }
+
+  String _getMonthName(int month) {
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
+    return monthNames[month - 1];
+  }
+
+  Widget _buildPieChart(List<ExpenseItem> data) {
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -180,15 +267,13 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
           height: 200,
           child: PieChart(
             PieChartData(
-              sections: _expenseData
+              sections: data
                   .map((item) => PieChartSectionData(
                         color: item.color,
-                        value: item.percentage.toDouble(),
+                        value: item.amount,
                         title: '${item.percentage}%',
                         radius: 50,
-                        titleStyle: TextStyle(
-                          fontSize: 12,
-                        ),
+                        titleStyle: TextStyle(fontSize: 12),
                       ))
                   .toList(),
             ),
@@ -196,60 +281,71 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
         ),
         Center(
           child: Text(
-            'S/.342.97',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-            ),
+            'S/.${data.fold(0.0, (sum, item) => sum + item.amount).toStringAsFixed(2)}',
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
           ),
         ),
       ],
     );
   }
 
-  Widget _buildBarChart() {
-    return SizedBox(
-      height: 100,
-      child: BarChart(
-        BarChartData(
-          alignment: BarChartAlignment.spaceAround,
-          maxY: 100,
-          barGroups: _expenseData
-              .asMap()
-              .entries
-              .map((entry) => BarChartGroupData(
-                    x: entry.key,
-                    barRods: [
-                      BarChartRodData(
-                        fromY: entry.value.percentage.toDouble(),
-                        toY: 100,
-                        color: entry.value.color,
-                        width: 16,
-                      )
-                    ],
-                  ))
-              .toList(),
+  Widget _buildCompactChart(List<ExpenseItem> data) {
+    if (data.isEmpty) {
+      return SizedBox(
+        height: 100,
+        child: Center(
+          child: Text('No hay datos para mostrar'),
         ),
+      );
+    }
+
+    double maxY = data
+        .map((item) => item.amount)
+        .reduce((max, amount) => amount > max ? amount : max);
+
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: maxY,
+        titlesData: FlTitlesData(show: false),
+        borderData: FlBorderData(show: false),
+        barGroups: data
+            .asMap()
+            .entries
+            .map((entry) => BarChartGroupData(
+                  x: entry.key,
+                  barRods: [
+                    BarChartRodData(
+                      toY: entry.value.amount,
+                      color: entry.value.color,
+                      width: 12,
+                    ),
+                  ],
+                ))
+            .toList(),
       ),
     );
   }
 
-  Widget _buildExpenseItem(ExpenseItem item) {
-    return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: Theme.of(context).cardColor,
-      child: ListTile(
-        leading: Icon(item.icon, color: item.color),
-        title: Text(item.name),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text('${item.percentage}%'),
-            Text(
-              'S/.${item.amount.toStringAsFixed(2)}',
-            ),
-          ],
+  Widget _buildExpenseItem(ExpenseItem item, String transactionType) {
+    return GestureDetector(
+      onTap: () {
+        context.go('/home/transaction_detail/${item.id}');
+      },
+      child: Card(
+        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        color: Theme.of(context).cardColor,
+        child: ListTile(
+          leading: Icon(item.icon, color: item.color),
+          title: Text(item.name),
+          trailing: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text('${item.percentage}%'),
+              Text('S/.${item.amount.toStringAsFixed(2)}'),
+            ],
+          ),
         ),
       ),
     );
@@ -257,11 +353,14 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
 }
 
 class ExpenseItem {
+  //id
+  final String id;
   final String name;
-  final int percentage;
+  int percentage;
   final double amount;
   final Color color;
   final IconData icon;
 
-  ExpenseItem(this.name, this.percentage, this.amount, this.color, this.icon);
+  ExpenseItem(
+      this.id, this.name, this.percentage, this.amount, this.color, this.icon);
 }

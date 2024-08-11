@@ -4,18 +4,18 @@ class TransactionModel {
   final String id;
   final String description;
   final DateTime date;
-  final DocumentReference categoryRef;
+  final String categoryId;
+  final String accountId;
   final double amount;
-  final DocumentReference paymentMethodRef;
   final String transactionType;
-  
+
   TransactionModel({
     required this.id,
     required this.description,
     required this.date,
-    required this.categoryRef,
+    required this.categoryId,
     required this.amount,
-    required this.paymentMethodRef,
+    required this.accountId,
     required this.transactionType,
   });
 
@@ -25,10 +25,11 @@ class TransactionModel {
       id: doc.id,
       description: data['description'] ?? '',
       date: (data['date'] as Timestamp).toDate(),
-      categoryRef: data['categoryRef'],
+      categoryId: data['categoryId'],
       amount: (data['amount'] ?? 0).toDouble(),
-      paymentMethodRef: data['paymentMethodRef'],
-      transactionType: data['transactionType'] ?? 'expense', // Default to 'expense' if not provided
+      accountId: data['accountId'],
+      transactionType: data['transactionType'] ??
+          'expense', // Default to 'expense' if not provided
     );
   }
 
@@ -36,9 +37,9 @@ class TransactionModel {
     return {
       'description': description,
       'date': Timestamp.fromDate(date),
-      'categoryRef': categoryRef,
+      'categoryId': categoryId,
       'amount': amount,
-      'paymentMethodRef': paymentMethodRef,
+      'accountId': accountId,
       'transactionType': transactionType,
     };
   }
@@ -48,9 +49,9 @@ class TransactionModel {
       id: id,
       description: description,
       date: date,
-      categoryRef: categoryRef,
+      categoryId: categoryId,
       amount: amount,
-      paymentMethodRef: paymentMethodRef,
+      accountId: accountId,
       transactionType: transactionType,
     ));
   }

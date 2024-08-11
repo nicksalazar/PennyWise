@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:habit_harmony/models/category_model.dart';
@@ -26,6 +25,7 @@ class CategoryRepository {
   Future<List<Category>> getCategories() async {
     CollectionReference userCategoriesCollection = _getCategoriesCollection();
     QuerySnapshot querySnapshot = await userCategoriesCollection.get();
+    print('querySnapshot.docs.length: ${querySnapshot.docs.length}');
     return querySnapshot.docs
         .map((doc) => Category.fromFirestore(doc))
         .toList();

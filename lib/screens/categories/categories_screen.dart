@@ -74,6 +74,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         final categories = categoryProvider.categories
             .where((category) => category.type == _selectedTab)
             .toList();
+        print("categories ${categories.length}");
         return Column(
           children: [
             Container(
