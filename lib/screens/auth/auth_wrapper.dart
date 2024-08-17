@@ -1,30 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:habit_harmony/providers/auth_provider.dart';
 import 'package:habit_harmony/screens/home/home_screen.dart';
-import 'package:habit_harmony/screens/auth/register_screen.dart';
-import 'login_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: FirebaseAuth.instance.authStateChanges(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.active) {
-          User? user = snapshot.data;
-          if (user == null) {
-            return AuthSelectionScreen();
-          } else {
-            return HomeScreen();
-          }
-        }
-        return Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
-    );
+    final authProvider = Provider.of<AuthProvider>(context);
+
+    if (authProvider.user != null) {
+      return HomeScreen();
+    } else {
+      return AuthSelectionScreen();
+    }
   }
 }
 
@@ -39,20 +28,14 @@ class AuthSelectionScreen extends StatelessWidget {
             ElevatedButton(
               child: Text('Iniciar sesión'),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginScreen()),
-                );
+                context.go('/auth/login');
               },
             ),
             SizedBox(height: 20),
             ElevatedButton(
               child: Text('Registrarse'),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RegistrationScreen()),
-                );
+                context.go('/auth/register');
               },
             ),
           ],

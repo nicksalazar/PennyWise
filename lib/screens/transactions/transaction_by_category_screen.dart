@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:habit_harmony/models/category_model.dart';
+import 'package:habit_harmony/providers/category_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:habit_harmony/models/transaction_model.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
@@ -22,6 +25,17 @@ class TransactionsByCategory extends StatefulWidget {
 
 class _TransactionsByCategoryState extends State<TransactionsByCategory> {
   String _selectedPeriod = 'Month';
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // Fetch categories after the widget is built
+    Future.microtask(() {
+      Provider.of<TransactionProvider>(context, listen: false)
+          .fetchCategories();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -132,17 +146,17 @@ class _TransactionsByCategoryState extends State<TransactionsByCategory> {
       itemCount: transactions.length,
       itemBuilder: (context, index) {
         final transaction = transactions[index];
-        final category =
+        Category category =
             transactionProvider.getCategoryById(transaction.categoryId);
-
+        print(
+            "category details ${category.name} ${category.color} ${category.id} ${category.type}");
         return ListTile(
           leading: CircleAvatar(
-            backgroundColor: Color(int.parse(
-                category?.color.replaceFirst('#', '0xff') ?? '0xff000000')),
-            child: Icon(getIconDataByName(category?.name ?? ""),
-                color: Colors.white),
+            backgroundColor:
+                Color(int.parse(category.color.replaceFirst('#', '0xff'))),
+            child: Icon(getIconDataByName(category.icon), color: Colors.white),
           ),
-          title: Text(transaction.description),
+          title: Text(category.name),
           subtitle: Text(DateFormat('MMMM d, y').format(transaction.date)),
           trailing: Text(
             'S/.${transaction.amount.toStringAsFixed(2)}',
@@ -155,6 +169,7 @@ class _TransactionsByCategoryState extends State<TransactionsByCategory> {
           ),
           onTap: () {
             // TODO: Navigate to transaction detail screen
+            context.go("/home/transaction_detail/${transaction.id}");
           },
         );
       },

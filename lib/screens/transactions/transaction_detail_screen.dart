@@ -8,10 +8,29 @@ import 'package:habit_harmony/providers/transaction_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:habit_harmony/models/transaction_model.dart';
 
-class TransactionDetailScreen extends StatelessWidget {
+class TransactionDetailScreen extends StatefulWidget {
   final String transactionId;
 
   TransactionDetailScreen({required this.transactionId});
+
+  @override
+  State<TransactionDetailScreen> createState() =>
+      _TransactionDetailScreenState();
+}
+
+class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    // Fetch transactions after the widget is built
+    Future.microtask(() {
+      Provider.of<TransactionProvider>(context, listen: false)
+          .fetchTransactions();
+      Provider.of<AccountProvider>(context, listen: false).fetchAccounts();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +38,7 @@ class TransactionDetailScreen extends StatelessWidget {
       builder: (context, transactionProvider, categoryProvider, accountProvider,
           child) {
         final transaction = transactionProvider.transactions.firstWhere(
-          (t) => t.id == transactionId,
+          (t) => t.id == widget.transactionId,
           orElse: () => TransactionModel(
             id: '',
             amount: 0,

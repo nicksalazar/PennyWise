@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:habit_harmony/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -11,24 +12,22 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    _checkUserAndNavigate();
+    _checkAuthStatus();
   }
 
-  Future<void> _checkUserAndNavigate() async {
-    // Simulate a delay for the splash screen (you can remove this in production)
+  Future<void> _checkAuthStatus() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+
+    // Espera a que se complete la autenticación
     await Future.delayed(Duration(seconds: 2));
 
-    if (!mounted) return; // Check if the widget is still in the tree
-
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (!mounted) return; // Check again before using context
-
-      if (user == null) {
-        context.go('/login'); // Use go_router to navigate to the login screen
-      } else {
-        context.go('/home'); // Use go_router to navigate to the home screen
-      }
-    });
+    // Verifica el estado del usuario
+    final user = authProvider.user;
+    if (user == null) {
+      context.go('/auth/login');
+    } else {
+      context.go('/home'); // Ajusta según la ruta de tu pantalla principal
+    }
   }
 
   @override

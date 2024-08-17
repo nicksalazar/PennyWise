@@ -6,6 +6,7 @@ import 'package:habit_harmony/models/category_model.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
 import 'package:habit_harmony/providers/category_provider.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
+import 'package:habit_harmony/screens/transactions/transaction_by_category_screen.dart';
 import 'package:habit_harmony/screens/transactions/transaction_screen.dart';
 import 'package:habit_harmony/utils/icon_utils.dart';
 import 'package:habit_harmony/widgets/my_drawer.dart';
@@ -330,7 +331,16 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
   Widget _buildExpenseItem(ExpenseItem item, String transactionType) {
     return GestureDetector(
       onTap: () {
-        context.go('/home/transaction_detail/${item.id}');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => TransactionsByCategory(
+              categoryId: item.id,
+              categoryName:item.name,
+              transactionType: transactionType, // or 'income'
+            ),
+          ),
+        );
       },
       child: Card(
         margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),

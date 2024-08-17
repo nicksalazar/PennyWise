@@ -21,6 +21,9 @@ class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     primarySwatch: primarySwatch,
     brightness: Brightness.light,
+    drawerTheme: DrawerThemeData(
+      elevation: 0,
+    ),
     scaffoldBackgroundColor: Color(0xFFF5F5F5),
     appBarTheme: AppBarTheme(
       color: primarySwatch,
@@ -62,6 +65,10 @@ class AppTheme {
   static final ThemeData darkTheme = ThemeData(
     primarySwatch: primarySwatch,
     brightness: Brightness.dark,
+    drawerTheme: DrawerThemeData(
+      elevation: 0,
+      
+    ),  
     scaffoldBackgroundColor: Color(0xFF121212),
     appBarTheme: AppBarTheme(
       color: Colors.grey[900],

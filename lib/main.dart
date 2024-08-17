@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
+import 'package:habit_harmony/providers/auth_provider.dart';
 import 'package:habit_harmony/providers/category_provider.dart';
 import 'package:habit_harmony/providers/loading_provider.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
@@ -27,23 +28,11 @@ import 'package:habit_harmony/screens/transactions/transaction_screen.dart';
 import 'package:habit_harmony/themes/app_theme.dart';
 import 'package:habit_harmony/widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:timezone/data/latest.dart' as tz;
-import 'package:timezone/timezone.dart' as tz;
 import 'firebase_options.dart';
-
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: '.env');
-
-  // Initialize notification plugin
-  await initNotifications();
-
-  // Set up water reminders
-  await setupWaterReminders();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -55,6 +44,9 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthProvider(),
+        ),
         ChangeNotifierProvider(
           create: (_) => LoadingProvider(),
         ),
@@ -85,65 +77,12 @@ void main() async {
   );
 }
 
-Future<void> initNotifications() async {
-  final AndroidInitializationSettings initializationSettingsAndroid =
-      AndroidInitializationSettings('app_icon');
-
-  final IOSInitializationSettings initializationSettingsIOS =
-      IOSInitializationSettings();
-
-  final InitializationSettings initializationSettings = InitializationSettings(
-    android: initializationSettingsAndroid,
-    iOS: initializationSettingsIOS,
-  );
-
-  await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-}
-
-Future<void> setupWaterReminders() async {
-  tz.initializeTimeZones();
-
-  for (int i = 0; i < 6; i++) {
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      i,
-      'Time to hydrate!',
-      'Don\'t forget to drink some water.',
-      _nextInstanceOfOneHour(i),
-      NotificationDetails(
-        android: AndroidNotificationDetails(
-          'water_reminders',
-          'Water Reminders',
-          channelDescription: 'Reminders to drink water',
-          importance: Importance.high,
-          priority: Priority.high,
-        ),
-        iOS: IOSNotificationDetails(),
-      ),
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
-  }
-}
-
-tz.TZDateTime _nextInstanceOfOneHour(int hourOffset) {
-  final now = tz.TZDateTime.now(tz.local);
-  final nextHour = now.add(Duration(hours: hourOffset));
-  return tz.TZDateTime(
-      tz.local, nextHour.year, nextHour.month, nextHour.day, nextHour.hour);
-}
-
 class MyApp extends StatelessWidget {
   final GoRouter _router = GoRouter(
     routes: [
       GoRoute(
         path: '/',
         builder: (context, state) => SplashScreen(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => LoginScreen(),
       ),
       GoRoute(
         path: '/home', //transactions
@@ -166,14 +105,7 @@ class MyApp extends StatelessWidget {
           ),
         ],
       ),
-      GoRoute(
-        path: '/register',
-        builder: (context, state) => RegistrationScreen(),
-      ),
-      GoRoute(
-        path: '/auth',
-        builder: (context, state) => AuthWrapper(),
-      ),
+
       GoRoute(
         path: '/categories',
         builder: (context, state) => CategoriesScreen(),
@@ -215,6 +147,21 @@ class MyApp extends StatelessWidget {
           ),
         ],
       ),
+      GoRoute(
+        path: '/auth',
+        builder: (context, state) => AuthWrapper(),
+        routes: [
+          GoRoute(
+            path: 'register',
+            builder: (context, state) => RegistrationScreen(),
+          ),
+          GoRoute(
+            path: 'login',
+            builder: (context, state) => LoginScreen(),
+          ),
+        ],
+      ),
+      //Logout
     ],
   );
 
@@ -223,7 +170,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: "Flutter Notion Budget Tracker",
-      theme: AppTheme.lightTheme,
+      theme: AppTheme.darkTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       routerConfig: _router,

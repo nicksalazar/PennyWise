@@ -42,10 +42,9 @@ class TransactionProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Category? getCategoryById(String id) {
+  Category getCategoryById(String id) {
     return _categories.firstWhere(
       (category) => category.id == id,
-      orElse: () => Category(id: '', name: '', icon: '', color: '', type: ''),
     );
   }
 

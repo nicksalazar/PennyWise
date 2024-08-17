@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:habit_harmony/providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -39,35 +40,36 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  Future<void> _signInWithGoogle() async {
-    setState(() => _isLoading = true);
-    try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser?.authentication;
-      final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
-      );
-      await FirebaseAuth.instance.signInWithCredential(credential);
-      context.go('/home');
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content:
-                Text('Error al iniciar sesión con Google: ${e.toString()}')),
-      );
-    }
-    setState(() => _isLoading = false);
-  }
+  // Future<void> _signInWithGoogle() async {
+  //   setState(() => _isLoading = true);
+  //   try {
+  //     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+  //     final GoogleSignInAuthentication? googleAuth =
+  //         await googleUser?.authentication;
+  //     final credential = GoogleAuthProvider.credential(
+  //       accessToken: googleAuth?.accessToken,
+  //       idToken: googleAuth?.idToken,
+  //     );
+  //     await FirebaseAuth.instance.signInWithCredential(credential);
+  //     context.go('/home');
+  //   } catch (e) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       SnackBar(
+  //           content:
+  //               Text('Error al iniciar sesión con Google: ${e.toString()}')),
+  //     );
+  //   }
+  //   setState(() => _isLoading = false);
+  // }
 
   Future<void> _signInWithEmailAndPassword() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        await FirebaseAuth.instance.signInWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
+        await Provider.of<AuthProvider>(context, listen: false)
+            .signIn(
+          _emailController.text,
+          _passwordController.text,
         );
         context.go('/home');
       } catch (e) {
@@ -185,22 +187,21 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                     ),
                     SizedBox(height: 16),
-                    OutlinedButton.icon(
-                      onPressed: _isLoading ? null : _signInWithGoogle,
-                      icon: FaIcon(FontAwesomeIcons.google, size: 18),
-                      label: Text('Continuar con Google'),
-                      style: OutlinedButton.styleFrom(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
+                    // OutlinedButton.icon(
+                    //   onPressed: _isLoading ? null : _signInWithGoogle,
+                    //   icon: FaIcon(FontAwesomeIcons.google, size: 18),
+                    //   label: Text('Continuar con Google'),
+                    //   style: OutlinedButton.styleFrom(
+                    //     padding: EdgeInsets.symmetric(vertical: 16),
+                    //     shape: RoundedRectangleBorder(
+                    //       borderRadius: BorderRadius.circular(12),
+                    //     ),
+                    //   ),
+                    // ),
                     SizedBox(height: 24),
                     TextButton(
                       onPressed: () {
-                        // Navegar a la pantalla de registro
-                        Navigator.of(context).pushNamed('/register');
+                        context.go('/auth/register');
                       },
                       child: Text('¿No tienes una cuenta? Regístrate'),
                     ),
