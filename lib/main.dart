@@ -10,6 +10,7 @@ import 'package:habit_harmony/providers/loading_provider.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
 import 'package:habit_harmony/providers/transfer_provider.dart';
 import 'package:habit_harmony/repositories/account_repository.dart';
+import 'package:habit_harmony/repositories/transaction_repository.dart';
 import 'package:habit_harmony/repositories/transfer_repository.dart';
 import 'package:habit_harmony/screens/accounts/account_new_screen.dart';
 import 'package:habit_harmony/screens/accounts/account_new_transfer_screen.dart';
@@ -41,30 +42,50 @@ void main() async {
   FirebaseFirestore.instance.settings = const Settings(
     persistenceEnabled: true,
   );
+  //repositories
+  AccountsRepository accountsRepository = AccountsRepository();
+  TransferRepository transferRepository = TransferRepository();
+  TransactionRepository transactionReporistory = TransactionRepository(
+    firestore: FirebaseFirestore.instance,
+  );
+
+  //providers
+  LoadingProvider loadingProvider = LoadingProvider();
+
+  TransferProvider transferProvider = TransferProvider(
+    transferRepository,
+    loadingProvider,
+  );
+
+  AccountProvider accountProvider = AccountProvider(
+    accountsRepository,
+    transferProvider,
+    loadingProvider,
+  );
+
+  TransactionProvider transactionProvider = TransactionProvider(
+    transactionReporistory,
+    accountProvider,
+    loadingProvider,
+  );
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-          create: (_) => AuthProvider(),
-        ),
-        ChangeNotifierProvider(
           create: (_) => LoadingProvider(),
         ),
         ChangeNotifierProvider(
-          create: (_) => TransactionProvider(),
+          create: (_) => AuthProvider(),
         ),
         ChangeNotifierProvider(
-          create: (context) => AccountProvider(
-            AccountsRepository(),
-            TransferRepository(),
-            Provider.of<LoadingProvider>(context, listen: false),
-          ),
+          create: (_) => transactionProvider,
         ),
         ChangeNotifierProvider(
-          create: (context) => TransferProvider(
-            TransferRepository(),
-            Provider.of<LoadingProvider>(context, listen: false),
-          ),
+          create: (context) => accountProvider,
+        ),
+        ChangeNotifierProvider(
+          create: (context) => transferProvider,
         ),
         ChangeNotifierProvider(
           create: (context) => CategoryProvider(
@@ -170,7 +191,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: "Flutter Notion Budget Tracker",
-      theme: AppTheme.darkTheme,
+      theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       routerConfig: _router,

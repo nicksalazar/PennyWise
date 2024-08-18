@@ -1,10 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:habit_harmony/models/transaction_model.dart';
+import 'package:habit_harmony/providers/account_provider.dart';
+import 'package:habit_harmony/providers/loading_provider.dart';
 import 'package:habit_harmony/repositories/transaction_repository.dart';
 import '../models/category_model.dart';
 
 class TransactionProvider with ChangeNotifier {
-  final TransactionRepository _repository = TransactionRepository();
+  final TransactionRepository _repository;
+  final AccountProvider _accountProvider;
+  final LoadingProvider _loadingProvider;
+
+  TransactionProvider(
+    this._repository,
+    this._accountProvider,
+    this._loadingProvider,
+  );
 
   List<TransactionModel> _transactions = [];
   List<Category> _categories = [];
@@ -17,29 +27,63 @@ class TransactionProvider with ChangeNotifier {
   }
 
   Future<void> addTransaction(TransactionModel transaction) async {
-    final newTransaction = await _repository.insertTransaction(transaction);
-    _transactions.insert(0, newTransaction);
-    notifyListeners();
+    try {
+      _loadingProvider.setLoading(true);
+      final newTransaction = await _repository.insertTransaction(transaction);
+      _transactions.insert(0, newTransaction);
+      //update balance
+      await _accountProvider.updateBalance(
+        transaction.accountId,
+        transaction.amount,
+        transaction.transactionType,
+      );
+      notifyListeners();
+    } catch (e) {
+      print('Error adding transaction: $e');
+    } finally {
+      _loadingProvider.setLoading(false);
+    }
   }
 
   Future<void> updateTransaction(TransactionModel transaction) async {
-    await _repository.updateTransaction(transaction);
-    int index = _transactions.indexWhere((t) => t.id == transaction.id);
-    if (index != -1) {
-      _transactions[index] = transaction;
-      notifyListeners();
+    try {
+      _loadingProvider.setLoading(true);
+      await _repository.updateTransaction(transaction);
+      int index = _transactions.indexWhere((t) => t.id == transaction.id);
+      if (index != -1) {
+        _transactions[index] = transaction;
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Error updating transaction: $e');
+    } finally {
+      _loadingProvider.setLoading(false);
     }
   }
 
   Future<void> deleteTransaction(String id) async {
-    await _repository.deleteTransaction(id);
-    _transactions.removeWhere((transaction) => transaction.id == id);
-    notifyListeners();
+    try {
+      _loadingProvider.setLoading(true);
+      await _repository.deleteTransaction(id);
+      _transactions.removeWhere((transaction) => transaction.id == id);
+      notifyListeners();
+    } catch (e) {
+      print('Error deleting transaction: $e');
+    } finally {
+      _loadingProvider.setLoading(false);
+    }
   }
 
   Future<void> fetchCategories() async {
-    _categories = await _repository.getCategories();
-    notifyListeners();
+    try {
+      _loadingProvider.setLoading(true);
+      _categories = await _repository.getCategories();
+      notifyListeners();
+    } catch (e) {
+      print('Error fetching categories: $e');
+    } finally {
+      _loadingProvider.setLoading(false);
+    }
   }
 
   Category getCategoryById(String id) {

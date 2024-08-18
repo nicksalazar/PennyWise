@@ -4,8 +4,12 @@ import 'package:habit_harmony/models/transaction_model.dart';
 import 'package:habit_harmony/models/category_model.dart';
 
 class TransactionRepository {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
+
+  TransactionRepository({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance,
+        _auth = FirebaseAuth.instance;
 
   CollectionReference _getTransactionsCollection() {
     String userId = _auth.currentUser!.uid;

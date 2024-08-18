@@ -6,7 +6,11 @@ class LoadingProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   void setLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
+    if (_isLoading != value) {
+      _isLoading = value;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        notifyListeners();
+      });
+    }
   }
 }

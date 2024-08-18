@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habit_harmony/models/account_model.dart';
 import 'package:habit_harmony/models/category_model.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
 import 'package:habit_harmony/providers/category_provider.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
 import 'package:habit_harmony/screens/transactions/transaction_by_category_screen.dart';
-import 'package:habit_harmony/screens/transactions/transaction_screen.dart';
 import 'package:habit_harmony/utils/icon_utils.dart';
 import 'package:habit_harmony/widgets/my_drawer.dart';
 import 'package:provider/provider.dart';
@@ -117,7 +115,6 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
       builder: (context, categoryProvider, transactionProvider, accountProvider,
           child) {
         final categories = categoryProvider.categories;
-        final accounts = accountProvider.accounts;
         final transactions = transactionProvider.getFilteredTransactions(
           transactionType: transactionType,
           period: _selectedPeriod,

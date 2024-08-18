@@ -5,7 +5,7 @@ import 'package:habit_harmony/models/account_model.dart';
 class AccountsRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
   CollectionReference _getAccountCollection() {
     String userId = _auth.currentUser!.uid;
     return _firestore.collection('users').doc(userId).collection('accounts');
@@ -31,9 +31,23 @@ class AccountsRepository {
     return account;
   }
 
-  Future<void> updateBalance(String accountId, double amount) {
-    return _getAccountCollection().doc(accountId).update({
-      'balance': FieldValue.increment(amount),
+  Future<void> updateBalance(
+      String accountId, double amount, String transactionType) async {
+    final account = await _getAccountCollection().doc(accountId).get();
+    return _firestore.runTransaction((transaction) async {
+      DocumentSnapshot accountDoc = account;
+      if (!accountDoc.exists) {
+        throw Exception('Account does not exist');
+      }
+      Account destAccount = Account.fromFirestore(accountDoc);
+      // Adjust the balance based on the transaction type
+      if (transactionType == 'income') {
+        destAccount.balance += amount;
+      } else {
+        destAccount.balance -= amount;
+      }
+
+      transaction.update(account.reference, destAccount.toMap());
     });
   }
 }

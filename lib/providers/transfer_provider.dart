@@ -77,4 +77,16 @@ class TransferProvider with ChangeNotifier {
     _endDate = end;
     getTransfersByDateRange(start, end);
   }
+
+  Future<void> createTransferInitital(TransferModel transferModel) async {
+    try {
+      _loadingProvider.setLoading(true);
+      await _transferRepository.createTransferInitital(transferModel);
+      notifyListeners();
+    } catch (e) {
+      print('Error creating transfer: $e');
+    } finally {
+      _loadingProvider.setLoading(false);
+    }
+  }
 }
