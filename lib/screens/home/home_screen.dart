@@ -7,8 +7,10 @@ import 'package:habit_harmony/providers/category_provider.dart';
 import 'package:habit_harmony/providers/transaction_provider.dart';
 import 'package:habit_harmony/screens/transactions/transaction_by_category_screen.dart';
 import 'package:habit_harmony/utils/icon_utils.dart';
+import 'package:habit_harmony/widgets/account_selection_dialog.dart';
 import 'package:habit_harmony/widgets/my_drawer.dart';
 import 'package:provider/provider.dart';
+import 'package:habit_harmony/utils/icon_utils.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -58,67 +60,88 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openDrawer();
-            },
+    return Consumer2<AccountProvider, TransactionProvider>(
+        builder: (context, accountProvider, transactionProvider, child) {
+      return Scaffold(
+        appBar: AppBar(
+          leading: Builder(
+            builder: (context) => IconButton(
+              icon: Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
+            ),
           ),
-        ),
-        title: Center(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.monetization_on),
-              Padding(padding: EdgeInsets.only(left: 8)),
-              DropdownButton<String>(
-                value: 'Total',
-                onChanged: (String? newValue) {},
-                items: <String>['Total', 'Option 1', 'Option 2']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
+          title: Center(
+            child: GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AccountSelectionDialog();
+                  },
+                );
+              },
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.monetization_on),
+                  Padding(padding: EdgeInsets.only(left: 8)),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        accountProvider.selectedAccountName,
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      Text(
+                        accountProvider.hideBalance
+                            ? '****'
+                            : 'S/.${accountProvider.selectedAccountBalance.toStringAsFixed(2)}',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ],
               ),
+            ),
+          ),
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: [
+              Tab(text: 'EXPENSES'),
+              Tab(text: 'INCOME'),
             ],
           ),
         ),
-        actions: [
-          IconButton(icon: Icon(Icons.receipt), onPressed: () {}),
-        ],
-        bottom: TabBar(
+        body: TabBarView(
           controller: _tabController,
-          tabs: [
-            Tab(text: 'EXPENSES'),
-            Tab(text: 'INCOME'),
+          children: [
+            _buildTransactionsTab(
+                'expense', accountProvider, transactionProvider),
+            _buildTransactionsTab(
+                'income', accountProvider, transactionProvider),
           ],
         ),
-      ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildTransactionsTab('expense'),
-          _buildTransactionsTab('income'),
-        ],
-      ),
-      drawer: MyDrawer(),
-    );
+        drawer: MyDrawer(),
+      );
+    });
   }
 
-  Widget _buildTransactionsTab(String transactionType) {
-    return Consumer3<CategoryProvider, TransactionProvider, AccountProvider>(
-      builder: (context, categoryProvider, transactionProvider, accountProvider,
-          child) {
+  Widget _buildTransactionsTab(
+    String transactionType,
+    AccountProvider accountProvider,
+    TransactionProvider transactionProvider,
+  ) {
+    return Consumer<CategoryProvider>(
+      builder: (context, categoryProvider, child) {
         final categories = categoryProvider.categories;
-        final transactions = transactionProvider.getFilteredTransactions(
+        final allTransactions = transactionProvider.getFilteredTransactions(
           transactionType: transactionType,
           period: _selectedPeriod,
         );
+        final transactions =
+            accountProvider.getTransactionsForSelectedAccount(allTransactions);
 
         // Group transactions by category and sum amounts
         Map<String, double> categoryTotals = {};
@@ -333,7 +356,7 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
           MaterialPageRoute(
             builder: (context) => TransactionsByCategory(
               categoryId: item.id,
-              categoryName:item.name,
+              categoryName: item.name,
               transactionType: transactionType, // or 'income'
             ),
           ),

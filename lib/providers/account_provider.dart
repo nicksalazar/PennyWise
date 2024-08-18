@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:habit_harmony/models/account_model.dart';
+import 'package:habit_harmony/models/transaction_model.dart';
 import 'package:habit_harmony/models/transfer_model.dart';
 import 'package:habit_harmony/providers/loading_provider.dart';
 import 'package:habit_harmony/providers/transfer_provider.dart';
@@ -14,11 +15,72 @@ class AccountProvider with ChangeNotifier {
     this._repository,
     this._transferProvider,
     this._loadingProvider,
-  );
+  ) {
+    fetchAccounts();
+    _selectedAccountId = 'total';
+  }
 
   List<Account> _accounts = [];
 
-  List<Account> get accounts => _accounts;
+  List<Account> get accounts => [
+        Account(
+          icon: 'total',
+          id: 'total',
+          name: 'Total',
+          balance: getTotalBalance(),
+          color: '0xFF000000',
+        ),
+        ..._accounts
+      ];
+
+  String _selectedAccountId = 'total';
+  bool _hideBalance = false;
+
+  String get selectedAccountId => _selectedAccountId;
+  bool get hideBalance => _hideBalance;
+
+  double getTotalBalance() {
+    return _accounts.fold(0, (sum, account) => sum + account.balance);
+  }
+
+  double get selectedAccountBalance {
+    if (_selectedAccountId == 'total') {
+      return getTotalBalance();
+    }
+    return _accounts
+        .firstWhere((account) => account.id == _selectedAccountId)
+        .balance;
+  }
+
+  //get name of selected account
+  String get selectedAccountName {
+    if (_selectedAccountId.isEmpty) {
+      return 'All accounts';
+    }
+    return accounts
+        .firstWhere((account) => account.id == _selectedAccountId)
+        .name;
+  }
+
+  void setSelectedAccountId(String id) {
+    _selectedAccountId = id;
+    notifyListeners();
+  }
+
+  void setHideBalance(bool value) {
+    _hideBalance = value;
+    notifyListeners();
+  }
+
+  List<TransactionModel> getTransactionsForSelectedAccount(
+      List<TransactionModel> allTransactions) {
+    if (_selectedAccountId == 'total') {
+      return allTransactions;
+    }
+    return allTransactions
+        .where((transaction) => transaction.accountId == _selectedAccountId)
+        .toList();
+  }
 
   Future<void> fetchAccounts() async {
     try {
