@@ -29,8 +29,11 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       body:
           Consumer<AccountProvider>(builder: (context, accountProvider, child) {
+  
         List<Account> accounts = accountProvider.accounts;
-
+        if (accounts.isNotEmpty) {
+          accounts.removeAt(0);
+        }
         return Column(
           children: [
             SizedBox(height: 20),

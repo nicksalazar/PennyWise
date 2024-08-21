@@ -86,10 +86,17 @@ class TransactionProvider with ChangeNotifier {
     }
   }
 
-  Category getCategoryById(String id) {
-    return _categories.firstWhere(
-      (category) => category.id == id,
-    );
+  Future<Category> getCategoryById(String id) async {
+    try {
+      _loadingProvider.setLoading(true);
+      return await _repository.getCategoryById(id);
+    } catch (e) {
+      print('Error fetching category: $e');
+      throw e; // O maneja el error de otra manera si prefieres
+      
+    } finally {
+      _loadingProvider.setLoading(false);
+    }
   }
 
   List<TransactionModel> getFilteredTransactions({

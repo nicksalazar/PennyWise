@@ -50,4 +50,9 @@ class CategoryRepository {
     CollectionReference userCategoriesCollection = _getCategoriesCollection();
     await userCategoriesCollection.doc(categoryId).delete();
   }
+
+  Future<Category> getCategoryById(String id) async {
+    DocumentSnapshot doc = await _getCategoriesCollection().doc(id).get();
+    return Category.fromFirestore(doc);
+  }
 }

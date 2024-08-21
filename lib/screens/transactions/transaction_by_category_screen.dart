@@ -34,6 +34,8 @@ class _TransactionsByCategoryState extends State<TransactionsByCategory> {
     Future.microtask(() {
       Provider.of<TransactionProvider>(context, listen: false)
           .fetchCategories();
+          //category provider
+      Provider.of<CategoryProvider>(context, listen: false);
     });
   }
 
@@ -57,8 +59,8 @@ class _TransactionsByCategoryState extends State<TransactionsByCategory> {
           ),
         ],
       ),
-      body: Consumer<TransactionProvider>(
-        builder: (context, transactionProvider, child) {
+      body: Consumer2<TransactionProvider, CategoryProvider>(
+        builder: (context, transactionProvider, categoryProvider, child) {
           final allTransactions = transactionProvider.getFilteredTransactions(
             transactionType: widget.transactionType,
             period: _selectedPeriod,
@@ -73,8 +75,8 @@ class _TransactionsByCategoryState extends State<TransactionsByCategory> {
               _buildTotalAmountHeader(context, totalAmount),
               _buildFilterOptions(),
               Expanded(
-                child: _buildTransactionList(
-                    context, transactions, transactionProvider),
+                child: _buildTransactionList(context, transactions,
+                    transactionProvider, categoryProvider),
               ),
             ],
           );
@@ -141,35 +143,54 @@ class _TransactionsByCategoryState extends State<TransactionsByCategory> {
   Widget _buildTransactionList(
       BuildContext context,
       List<TransactionModel> transactions,
-      TransactionProvider transactionProvider) {
+      TransactionProvider transactionProvider,
+      CategoryProvider categoryProvider) {
     return ListView.builder(
       itemCount: transactions.length,
       itemBuilder: (context, index) {
         final transaction = transactions[index];
-        Category category =
-            transactionProvider.getCategoryById(transaction.categoryId);
-        print(
-            "category details ${category.name} ${category.color} ${category.id} ${category.type}");
-        return ListTile(
-          leading: CircleAvatar(
-            backgroundColor:
-                Color(int.parse(category.color.replaceFirst('#', '0xff'))),
-            child: Icon(getIconDataByName(category.icon), color: Colors.white),
-          ),
-          title: Text(category.name),
-          subtitle: Text(DateFormat('MMMM d, y').format(transaction.date)),
-          trailing: Text(
-            'S/.${transaction.amount.toStringAsFixed(2)}',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: transaction.transactionType == 'expense'
-                  ? Colors.red
-                  : Colors.green,
-            ),
-          ),
-          onTap: () {
-            // TODO: Navigate to transaction detail screen
-            context.go("/home/transaction_detail/${transaction.id}");
+        return FutureBuilder<Category>(
+          future: categoryProvider.getCategoryById(transaction.categoryId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return ListTile(
+                title: Text('Loading...'),
+              );
+            } else if (snapshot.hasError) {
+              return ListTile(
+                title: Text('Error: ${snapshot.error}'),
+              );
+            } else if (!snapshot.hasData) {
+              return ListTile(
+                title: Text('No category found'),
+              );
+            } else {
+              final category = snapshot.data!;
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Color(
+                      int.parse(category.color.replaceFirst('#', '0xff'))),
+                  child: Icon(getIconDataByName(category.icon),
+                      color: Colors.white),
+                ),
+                title: Text(category.name),
+                subtitle:
+                    Text(DateFormat('MMMM d, y').format(transaction.date)),
+                trailing: Text(
+                  'S/.${transaction.amount.toStringAsFixed(2)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: transaction.transactionType == 'expense'
+                        ? Colors.red
+                        : Colors.green,
+                  ),
+                ),
+                onTap: () {
+                  // TODO: Navigate to transaction detail screen
+                  context.go("/home/transaction_detail/${transaction.id}");
+                },
+              );
+            }
           },
         );
       },

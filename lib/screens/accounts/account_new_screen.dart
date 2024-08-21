@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:habit_harmony/models/account_model.dart';
 import 'package:habit_harmony/providers/account_provider.dart';
+import 'package:habit_harmony/providers/category_provider.dart';
 import 'package:habit_harmony/utils/icon_utils.dart';
+import 'package:habit_harmony/widgets/color_selector_widget.dart';
 import 'package:provider/provider.dart';
 
 class AddAccountScreen extends StatefulWidget {
@@ -36,6 +38,12 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   @override
   void initState() {
     super.initState();
+    //get mains providers
+    WidgetsBinding.instance!.addPostFrameCallback((_) {
+      Provider.of<AccountProvider>(context, listen: false).fetchAccounts();
+      //categories
+      Provider.of<CategoryProvider>(context, listen: false);
+    });
     if (widget.accountId != null) {
       final account = Provider.of<AccountProvider>(context, listen: false)
           .getAccountById(widget.accountId!);
@@ -77,9 +85,6 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                   suffixText: selectedCurrency,
                 ),
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: <TextInputFormatter>[
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter some text';
@@ -173,7 +178,21 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                 }).toList()
                   ..add(
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        //ColorSelector
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ColorSelector(
+                              onColorSelected: (color) {
+                                setState(() {
+                                  selectedColor = color;
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      },
                       child: Container(
                         width: 30,
                         height: 30,

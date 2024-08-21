@@ -8,6 +8,7 @@ import 'package:habit_harmony/providers/category_provider.dart';
 import 'package:habit_harmony/models/account_model.dart';
 import 'package:habit_harmony/models/category_model.dart';
 import 'package:habit_harmony/screens/transactions/calculator_screen.dart';
+
 class TransactionScreen extends StatefulWidget {
   final String initialTransactionType;
 
@@ -32,7 +33,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
     super.initState();
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       Provider.of<AccountProvider>(context, listen: false).fetchAccounts();
-      Provider.of<CategoryProvider>(context, listen: false);
     });
     isExpense = widget.initialTransactionType == 'expense';
   }
@@ -168,10 +168,17 @@ class _TransactionScreenState extends State<TransactionScreen> {
   }
 
   Widget _buildAccountDropdown(AccountProvider accountProvider) {
+
+    final accounts = accountProvider.accounts
+        .where((Account account) => account.id != 'total')
+        .toList();
+
+    final cuentas = accounts.map((e) => e.name).toList();
     return DropdownButtonFormField<Account>(
       value: selectedAccount,
       hint: Text('Select Account'),
-      items: accountProvider.accounts.map((Account account) {
+      items: accounts
+          .map((Account account) {
         return DropdownMenuItem<Account>(
           value: account,
           child: Text("${account.name} - PEN S/. ${account.balance}"),

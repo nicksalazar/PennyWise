@@ -114,7 +114,8 @@ class MyApp extends StatelessWidget {
             builder: (context, state) {
               final transactionType = state.pathParameters['transactionType'];
               return TransactionScreen(
-                  initialTransactionType: transactionType ?? 'expense');
+                initialTransactionType: transactionType ?? 'expense',
+              );
             },
           ),
           //transaction details

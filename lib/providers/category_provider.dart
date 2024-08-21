@@ -52,4 +52,18 @@ class CategoryProvider with ChangeNotifier {
       _loadingProvider.setLoading(false);
     }
   }
+
+  //get category by id
+  Future<Category> getCategoryById(String categoryId) async {
+    try {
+      _loadingProvider.setLoading(true);
+      //get by repository
+      return await _categoryRepository.getCategoryById(categoryId);
+    } catch (e) {
+      print('Error getting category by id: $e');
+      throw e;
+    } finally {
+      _loadingProvider.setLoading(false);
+    }
+  }
 }

@@ -47,12 +47,15 @@ class TransactionRepository {
   }
 
   Future<List<Category>> getCategories() async {
-    String userId = _auth.currentUser!.uid;
-    QuerySnapshot snapshot = await _firestore
-        .collection('users')
-        .doc(userId)
-        .collection('categories')
+    QuerySnapshot snapshot = await _getTransactionsCollection()
         .get();
     return snapshot.docs.map((doc) => Category.fromFirestore(doc)).toList();
+  }
+
+  Future<Category> getCategoryById(String id) async {
+    DocumentSnapshot doc = await _getTransactionsCollection()
+        .doc(id)
+        .get();
+    return Category.fromFirestore(doc);
   }
 }
