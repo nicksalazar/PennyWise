@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habit_harmony/models/category_model.dart';
-import 'package:habit_harmony/providers/category_provider.dart';
+import 'package:pennywise/models/category_model.dart';
+import 'package:pennywise/providers/category_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:habit_harmony/models/transaction_model.dart';
-import 'package:habit_harmony/providers/transaction_provider.dart';
-import 'package:habit_harmony/utils/icon_utils.dart';
+import 'package:pennywise/models/transaction_model.dart';
+import 'package:pennywise/providers/transaction_provider.dart';
+import 'package:pennywise/utils/icon_utils.dart';
 import 'package:intl/intl.dart';
 
 class TransactionsByCategory extends StatefulWidget {

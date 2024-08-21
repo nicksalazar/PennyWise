@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:habit_harmony/models/account_model.dart';
-import 'package:habit_harmony/models/transaction_model.dart';
-import 'package:habit_harmony/models/transfer_model.dart';
-import 'package:habit_harmony/providers/loading_provider.dart';
-import 'package:habit_harmony/providers/transfer_provider.dart';
-import 'package:habit_harmony/repositories/account_repository.dart';
+import 'package:pennywise/models/account_model.dart';
+import 'package:pennywise/models/transaction_model.dart';
+import 'package:pennywise/models/transfer_model.dart';
+import 'package:pennywise/providers/loading_provider.dart';
+import 'package:pennywise/providers/transfer_provider.dart';
+import 'package:pennywise/repositories/account_repository.dart';
 
 class AccountProvider with ChangeNotifier {
   final AccountsRepository _repository;
@@ -40,7 +40,9 @@ class AccountProvider with ChangeNotifier {
   bool get hideBalance => _hideBalance;
 
   double getTotalBalance() {
-    return _accounts.fold(0, (sum, account) => sum + account.balance);
+    return _accounts
+        .where((item) => item.id != "total")
+        .fold(0, (sum, account) => sum + account.balance);
   }
 
   double get selectedAccountBalance {

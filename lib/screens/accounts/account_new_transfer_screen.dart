@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:habit_harmony/models/transfer_model.dart';
-import 'package:habit_harmony/providers/account_provider.dart';
-import 'package:habit_harmony/providers/transfer_provider.dart';
+import 'package:pennywise/models/transfer_model.dart';
+import 'package:pennywise/providers/account_provider.dart';
+import 'package:pennywise/providers/transfer_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 

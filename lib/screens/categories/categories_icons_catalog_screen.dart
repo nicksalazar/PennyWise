@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habit_harmony/utils/icon_utils.dart';
+import 'package:pennywise/utils/icon_utils.dart';
 
 class IconsCatalogScreen extends StatefulWidget {
   @override

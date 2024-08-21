@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:habit_harmony/models/category_model.dart';
+import 'package:pennywise/models/category_model.dart';
 
 class CategoryRepository {
   CollectionReference _getCategoriesCollection() {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:habit_harmony/models/transaction_model.dart';
-import 'package:habit_harmony/providers/account_provider.dart';
-import 'package:habit_harmony/providers/loading_provider.dart';
-import 'package:habit_harmony/repositories/transaction_repository.dart';
+import 'package:pennywise/models/transaction_model.dart';
+import 'package:pennywise/providers/account_provider.dart';
+import 'package:pennywise/providers/loading_provider.dart';
+import 'package:pennywise/repositories/transaction_repository.dart';
 import '../models/category_model.dart';
 
 class TransactionProvider with ChangeNotifier {
@@ -66,10 +66,8 @@ class TransactionProvider with ChangeNotifier {
       _loadingProvider.setLoading(true);
       await _repository.deleteTransaction(transaction.id);
       //update accountbalance
-      _accountProvider.updateBalance(transaction.accountId, transaction.amount, transaction.transactionType);
-      
-      
-      _transactions.removeWhere((transaction_) => transaction_.id == transaction.id);
+      await _accountProvider.adjustBalance(
+          transaction.accountId, transaction.amount);
 
       notifyListeners();
     } catch (e) {
@@ -98,7 +96,6 @@ class TransactionProvider with ChangeNotifier {
     } catch (e) {
       print('Error fetching category: $e');
       throw e; // O maneja el error de otra manera si prefieres
-      
     } finally {
       _loadingProvider.setLoading(false);
     }

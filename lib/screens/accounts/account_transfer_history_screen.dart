@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habit_harmony/models/account_model.dart';
-import 'package:habit_harmony/providers/account_provider.dart';
+import 'package:pennywise/models/account_model.dart';
+import 'package:pennywise/providers/account_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:habit_harmony/providers/transfer_provider.dart';
-import 'package:habit_harmony/models/transfer_model.dart';
+import 'package:pennywise/providers/transfer_provider.dart';
+import 'package:pennywise/models/transfer_model.dart';
 
 class TransferHistoryScreen extends StatefulWidget {
   @override

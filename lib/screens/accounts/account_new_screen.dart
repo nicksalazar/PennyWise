@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:habit_harmony/models/account_model.dart';
-import 'package:habit_harmony/providers/account_provider.dart';
-import 'package:habit_harmony/providers/category_provider.dart';
-import 'package:habit_harmony/utils/icon_utils.dart';
-import 'package:habit_harmony/widgets/color_selector_widget.dart';
+import 'package:pennywise/models/account_model.dart';
+import 'package:pennywise/providers/account_provider.dart';
+import 'package:pennywise/providers/category_provider.dart';
+import 'package:pennywise/utils/icon_utils.dart';
+import 'package:pennywise/widgets/color_selector_widget.dart';
 import 'package:provider/provider.dart';
 
 class AddAccountScreen extends StatefulWidget {

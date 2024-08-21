@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habit_harmony/models/category_model.dart';
-import 'package:habit_harmony/providers/account_provider.dart';
-import 'package:habit_harmony/providers/category_provider.dart';
-import 'package:habit_harmony/providers/transaction_provider.dart';
-import 'package:habit_harmony/screens/transactions/transaction_by_category_screen.dart';
-import 'package:habit_harmony/utils/icon_utils.dart';
-import 'package:habit_harmony/widgets/account_selection_dialog.dart';
-import 'package:habit_harmony/widgets/my_drawer.dart';
+import 'package:pennywise/models/category_model.dart';
+import 'package:pennywise/providers/account_provider.dart';
+import 'package:pennywise/providers/category_provider.dart';
+import 'package:pennywise/providers/transaction_provider.dart';
+import 'package:pennywise/screens/transactions/transaction_by_category_screen.dart';
+import 'package:pennywise/utils/icon_utils.dart';
+import 'package:pennywise/widgets/account_selection_dialog.dart';
+import 'package:pennywise/widgets/my_drawer.dart';
 import 'package:provider/provider.dart';
-import 'package:habit_harmony/utils/icon_utils.dart';
+import 'package:pennywise/utils/icon_utils.dart';
 
 class HomeScreen extends StatelessWidget {
   @override

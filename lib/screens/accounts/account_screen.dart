@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habit_harmony/models/account_model.dart';
-import 'package:habit_harmony/providers/account_provider.dart';
-import 'package:habit_harmony/utils/icon_utils.dart';
-import 'package:habit_harmony/widgets/my_drawer.dart';
+import 'package:pennywise/models/account_model.dart';
+import 'package:pennywise/providers/account_provider.dart';
+import 'package:pennywise/utils/icon_utils.dart';
+import 'package:pennywise/widgets/my_drawer.dart';
 import 'package:provider/provider.dart';
 
 class AccountScreen extends StatefulWidget {
@@ -29,7 +29,6 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
       body:
           Consumer<AccountProvider>(builder: (context, accountProvider, child) {
-  
         List<Account> accounts = accountProvider.accounts;
         if (accounts.isNotEmpty) {
           accounts.removeAt(0);
@@ -42,14 +41,16 @@ class _AccountScreenState extends State<AccountScreen> {
               style: TextStyle(fontSize: 18),
             ),
             Text(
-              '\S/. ${accounts.fold(0.0, (prev, account) => prev + account.balance).toString()}',
+              'S/. ${accounts.fold(0.0, (prev, account) => prev + account.balance).toStringAsFixed(2)}',
               style: TextStyle(
                 fontSize: 30,
                 fontWeight: FontWeight.bold,
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 20),
+            SizedBox(
+                height:
+                    20), // Asegúrate de cerrar el widget correctamenteedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:habit_harmony/models/account_model.dart';
-import 'package:habit_harmony/models/category_model.dart';
-import 'package:habit_harmony/providers/account_provider.dart';
-import 'package:habit_harmony/providers/category_provider.dart';
-import 'package:habit_harmony/providers/transaction_provider.dart';
+import 'package:pennywise/models/account_model.dart';
+import 'package:pennywise/models/category_model.dart';
+import 'package:pennywise/providers/account_provider.dart';
+import 'package:pennywise/providers/category_provider.dart';
+import 'package:pennywise/providers/transaction_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:habit_harmony/models/transaction_model.dart';
+import 'package:pennywise/models/transaction_model.dart';
 
 class TransactionDetailScreen extends StatefulWidget {
   final String transactionId;
@@ -122,7 +122,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                                   await transactionProvider
                                       .deleteTransaction(transaction)
                                       .then((_) {
-                                    context.go('/');
+                                    context.go('/home');
                                   }).catchError((error) {
                                     // Maneja el error si es necesario
                                     print('Error deleting transaction: $error');

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:habit_harmony/providers/auth_provider.dart';
-import 'package:habit_harmony/screens/home/home_screen.dart';
+import 'package:pennywise/providers/auth_provider.dart';
+import 'package:pennywise/screens/home/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 

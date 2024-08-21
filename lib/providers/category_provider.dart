@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:habit_harmony/models/category_model.dart';
-import 'package:habit_harmony/providers/loading_provider.dart';
+import 'package:pennywise/models/category_model.dart';
+import 'package:pennywise/providers/loading_provider.dart';
 import '../repositories/category_repository.dart';
 
 class CategoryProvider with ChangeNotifier {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:habit_harmony/models/transfer_model.dart';
-import 'package:habit_harmony/providers/account_provider.dart';
-import 'package:habit_harmony/providers/loading_provider.dart';
-import 'package:habit_harmony/repositories/transfer_repository.dart';
+import 'package:pennywise/models/transfer_model.dart';
+import 'package:pennywise/providers/account_provider.dart';
+import 'package:pennywise/providers/loading_provider.dart';
+import 'package:pennywise/repositories/transfer_repository.dart';
 
 class TransferProvider with ChangeNotifier {
   final TransferRepository _transferRepository;

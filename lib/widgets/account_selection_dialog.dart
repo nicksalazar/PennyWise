@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:habit_harmony/providers/account_provider.dart';
+import 'package:pennywise/providers/account_provider.dart';
 
 class AccountSelectionDialog extends StatelessWidget {
   @override
