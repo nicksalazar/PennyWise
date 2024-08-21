@@ -19,7 +19,6 @@ class TransactionDetailScreen extends StatefulWidget {
 }
 
 class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
-
   @override
   void initState() {
     // TODO: implement initState
@@ -119,11 +118,15 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                               ),
                               TextButton(
                                 child: Text('Delete'),
-                                onPressed: () {
-                                  transactionProvider
-                                      .deleteTransaction(transaction.id);
-                                  Navigator.of(context).pop();
-                                  context.go('/');
+                                onPressed: () async {
+                                  await transactionProvider
+                                      .deleteTransaction(transaction)
+                                      .then((_) {
+                                    context.go('/');
+                                  }).catchError((error) {
+                                    // Maneja el error si es necesario
+                                    print('Error deleting transaction: $error');
+                                  });
                                 },
                               ),
                             ],

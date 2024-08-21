@@ -61,11 +61,16 @@ class TransactionProvider with ChangeNotifier {
     }
   }
 
-  Future<void> deleteTransaction(String id) async {
+  Future<void> deleteTransaction(TransactionModel transaction) async {
     try {
       _loadingProvider.setLoading(true);
-      await _repository.deleteTransaction(id);
-      _transactions.removeWhere((transaction) => transaction.id == id);
+      await _repository.deleteTransaction(transaction.id);
+      //update accountbalance
+      _accountProvider.updateBalance(transaction.accountId, transaction.amount, transaction.transactionType);
+      
+      
+      _transactions.removeWhere((transaction_) => transaction_.id == transaction.id);
+
       notifyListeners();
     } catch (e) {
       print('Error deleting transaction: $e');
