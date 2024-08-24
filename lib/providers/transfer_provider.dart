@@ -27,7 +27,8 @@ class TransferProvider with ChangeNotifier {
       await accountProvider.fetchAccounts();
       notifyListeners();
     } catch (e) {
-      print('Error adding transfer: $e');
+      print('Error creating transfer: $e');
+      throw StateError('No cuentas con saldo suficiente para realizar la transferencia');
     } finally {
       _loadingProvider.setLoading(false);
     }

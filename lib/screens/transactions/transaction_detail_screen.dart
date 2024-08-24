@@ -104,7 +104,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                     onPressed: () {
                       showDialog(
                         context: context,
-                        builder: (BuildContext context) {
+                        builder: (BuildContext dialogContext) {
                           return AlertDialog(
                             title: Text('Confirm Deletion'),
                             content: Text(
@@ -121,12 +121,22 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                                 onPressed: () async {
                                   await transactionProvider
                                       .deleteTransaction(transaction)
-                                      .then((_) {
-                                    context.go('/home');
-                                  }).catchError((error) {
-                                    // Maneja el error si es necesario
-                                    print('Error deleting transaction: $error');
-                                  });
+                                      .then(
+                                    (_) {
+                                      ScaffoldMessenger.of(dialogContext)
+                                          .showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                              'Transaction deleted successfully'),
+                                          duration: Duration(seconds: 2),
+                                        ),
+                                      );
+                                      Navigator.of(dialogContext)
+                                          .pop(); // Close the dialog
+                                      GoRouter.of(context).go(
+                                          '/home'); // Navigate to home and remove all previous routes
+                                    },
+                                  );
                                 },
                               ),
                             ],

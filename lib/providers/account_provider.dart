@@ -166,15 +166,15 @@ class AccountProvider with ChangeNotifier {
 
   //UPDATE BALANCE
   Future<void> updateBalance(
-    String id,
+    String accountId,
     double amount,
     String transactionType,
   ) async {
     try {
       _loadingProvider.setLoading(true);
-      await _repository.updateBalance(id, amount, transactionType);
+      await _repository.updateBalance(accountId, amount, transactionType);
       //update local variable
-      _accounts[_accounts.indexWhere((element) => element.id == id)].balance +=
+      _accounts[_accounts.indexWhere((element) => element.id == accountId)].balance +=
           transactionType == 'income' ? amount : -amount;
       notifyListeners();
     } catch (e) {
@@ -189,6 +189,8 @@ class AccountProvider with ChangeNotifier {
   Account getAccountById(String id) {
     return _accounts.firstWhere((element) => element.id == id);
   }
+
+
 
   //adjust balance
   Future<void> adjustBalance(String accountId, double amount) async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pennywise/models/account_model.dart';
 import 'package:pennywise/providers/account_provider.dart';
 import 'package:pennywise/providers/category_provider.dart';
@@ -62,6 +63,11 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final categories = categorizedIcons.entries
+        .map((e) => e.value)
+        .expand((element) => element)
+        .toList();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.accountId == null ? 'Add account' : 'Edit account'),
@@ -107,48 +113,59 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
                 },
               ),
               SizedBox(height: 20),
-              Container(
-                height: 200.0, // Adjust height as needed
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4, // Number of icons per row
-                    crossAxisSpacing: 10.0,
-                    mainAxisSpacing: 10.0,
-                  ),
-                  itemCount: iconMap.length,
-                  itemBuilder: (context, index) {
-                    String iconName = iconMap.keys.elementAt(index);
-                    IconData iconData = iconMap[iconName]!;
-
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          selectedIcon = iconName;
-                        });
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  childAspectRatio: 1,
+                ),
+                itemCount: (categories.length * 0.08).ceil() + 1,
+                itemBuilder: (context, index) {
+                  if (index == (categories.length * 0.08).ceil()) {
+                    return InkWell(
+                      onTap: () async {
+                        final result = await context.push(
+                          '/categories/icon_catalog',
+                        );
+                        print("here is result $result");
+                        if (result != null && result is String) {
+                          setState(() {
+                            selectedIcon = result;
+                          });
+                        }
                       },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: selectedIcon == iconName
-                                ? selectedColor
-                                : Colors.transparent,
-                            width: 2.0,
-                          ),
-                          borderRadius: BorderRadius.circular(8.0),
-                        ),
-                        child: Icon(
-                          iconData,
-                          size: 36.0,
-                          color: selectedIcon == iconName
-                              ? selectedColor
-                              : Colors.black,
-                        ),
+                      child: Icon(
+                        Icons.more_horiz,
+                        size: 40,
                       ),
                     );
-                  },
-                ),
+                  }
+
+                  final iconName = categories[index];
+                  final iconData = getIconDataByName(iconName);
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        selectedIcon = iconName;
+                      });
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: selectedIcon == iconName
+                          ? selectedColor
+                          : Colors.grey[300],
+                      child: Icon(
+                        iconData,
+                        color: selectedIcon == iconName
+                            ? Colors.white
+                            : Colors.black,
+                        size: 30,
+                      ),
+                    ),
+                  );
+                },
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 16),
               Text('Color', style: TextStyle(fontSize: 16)),
               SizedBox(height: 10),
               Row(
@@ -280,34 +297,45 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   }
 
   Future<void> _submitForm(bool isEdit) async {
-    if (selectedColor != null && selectedIcon != null) {
-      String hexColor =
-          '#${selectedColor!.value.toRadixString(16).substring(2)}';
+    try {
+      if (selectedColor != null && selectedIcon != null) {
+        String hexColor =
+            '#${selectedColor!.value.toRadixString(16).substring(2)}';
 
-      if (isEdit) {
-        Provider.of<AccountProvider>(context, listen: false).editAccount(
-          Account(
-            id: widget.accountId!,
-            name: accountNameController.text,
-            icon: selectedIcon,
-            balance: double.parse(balanceController.text),
-            color: hexColor,
-          ),
-        );
-        Navigator.pop(context);
-      } else {
-        Provider.of<AccountProvider>(context, listen: false).addAccount(
-          Account(
-            id: "",
-            name: accountNameController.text,
-            icon: selectedIcon,
-            balance: double.parse(balanceController.text),
-            color: hexColor,
-          ),
-        );
+        if (isEdit) {
+          await Provider.of<AccountProvider>(context, listen: false)
+              .editAccount(
+            Account(
+              id: widget.accountId!,
+              name: accountNameController.text,
+              icon: selectedIcon,
+              balance: double.parse(balanceController.text),
+              color: hexColor,
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          await Provider.of<AccountProvider>(context, listen: false).addAccount(
+            Account(
+              id: "",
+              name: accountNameController.text,
+              icon: selectedIcon,
+              balance: double.parse(balanceController.text),
+              color: hexColor,
+            ),
+          );
 
-        Navigator.pop(context);
+          Navigator.pop(context);
+        }
       }
+    } catch (e) {
+      //snack dialog red
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error adding account: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

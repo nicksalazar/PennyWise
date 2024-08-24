@@ -5,7 +5,12 @@ import 'package:pennywise/providers/category_provider.dart';
 import 'package:pennywise/utils/icon_utils.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/color_selector_widget.dart';
+
 class NewCategoryScreen extends StatefulWidget {
+  final String categoryType;
+
+  NewCategoryScreen({required this.categoryType});
   @override
   _NewCategoryScreenState createState() => _NewCategoryScreenState();
 }
@@ -17,6 +22,24 @@ class _NewCategoryScreenState extends State<NewCategoryScreen> {
   String _selectedIcon = 'help';
   Color _selectedColor = Colors.red;
   final _formKey = GlobalKey<FormState>();
+
+  final List<Color> colors = [
+    Colors.yellow,
+    Colors.green.shade200,
+    Colors.green,
+    Colors.pink,
+    Colors.blue,
+    Colors.red,
+    Colors.cyan,
+  ];
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    isExpense = widget.categoryType == 'expense';
+  }
+
   @override
   Widget build(BuildContext context) {
     final categories = categorizedIcons.entries
@@ -134,44 +157,63 @@ class _NewCategoryScreenState extends State<NewCategoryScreen> {
                 },
               ),
               SizedBox(height: 16),
-              Text('Color'),
-              Wrap(
-                spacing: 8,
-                children: [
-                  ColorButton(
-                      color: Colors.pink,
-                      isSelected: _selectedColor == Colors.pink,
-                      onTap: () => setColor(Colors.pink)),
-                  ColorButton(
-                      color: Colors.blue,
-                      isSelected: _selectedColor == Colors.blue,
-                      onTap: () => setColor(Colors.blue)),
-                  ColorButton(
-                      color: Colors.yellow,
-                      isSelected: _selectedColor == Colors.yellow,
-                      onTap: () => setColor(Colors.yellow)),
-                  ColorButton(
-                      color: Colors.green,
-                      isSelected: _selectedColor == Colors.green,
-                      onTap: () => setColor(Colors.green)),
-                  ColorButton(
-                      color: Colors.red,
-                      isSelected: _selectedColor == Colors.red,
-                      onTap: () => setColor(Colors.red)),
-                  ColorButton(
-                      color: Colors.cyan,
-                      isSelected: _selectedColor == Colors.cyan,
-                      onTap: () => setColor(Colors.cyan)),
-                  ColorButton(
-                      color: Colors.grey,
-                      isSelected: _selectedColor == Colors.grey,
-                      onTap: () => setColor(Colors.grey)),
-                ],
+              Text('Color new', style: TextStyle(fontSize: 16)),
+              SizedBox(height: 10),
+              Row(
+                children: colors.map((color) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedColor = color;
+                      });
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(right: 10),
+                      width: 30,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: _selectedColor.value == color.value
+                              ? Colors.black
+                              : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList()
+                  ..add(
+                    GestureDetector(
+                      onTap: () {
+                        //ColorSelector
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ColorSelector(
+                              onColorSelected: (color) {
+                                setState(() {
+                                  _selectedColor = color;
+                                });
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.grey),
+                        ),
+                        child: Icon(Icons.add, size: 20),
+                      ),
+                    ),
+                  ),
               ),
-              //rectangle button with rounder yellow
-              SizedBox(
-                height: 16,
-              ),
+              SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
                   onPressed: () {

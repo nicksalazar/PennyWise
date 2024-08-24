@@ -133,8 +133,10 @@ class MyApp extends StatelessWidget {
         builder: (context, state) => CategoriesScreen(),
         routes: [
           GoRoute(
-            path: 'new_category',
-            builder: (context, state) => NewCategoryScreen(),
+            path: 'new_category/:categoryType',
+            builder: (context, state) => NewCategoryScreen(
+              categoryType: state.pathParameters['categoryType']!,
+            ),
           ),
           GoRoute(
             path: 'icon_catalog',

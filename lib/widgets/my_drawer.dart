@@ -7,7 +7,8 @@ class MyDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-
+    final currentRoute = GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
+    print("current route ${currentRoute}");
     // Ensure that user data is loaded
     final user = authProvider.user;
 
@@ -41,34 +42,34 @@ class MyDrawer extends StatelessWidget {
               ],
             ),
           ),
-          ListTile(
-            leading: Icon(Icons.pie_chart),
-            title: Text('Home'),
-            onTap: () {
-              context.go('/home');
-            },
+          _buildListTile(
+            context,
+            icon: Icons.pie_chart,
+            title: 'Home',
+            route: '/home',
+            currentRoute: currentRoute,
           ),
-          ListTile(
-            leading: Icon(Icons.monetization_on),
-            title: Text('Accounts'),
-            onTap: () {
-              context.go('/accounts');
-            },
+          _buildListTile(
+            context,
+            icon: Icons.monetization_on,
+            title: 'Accounts',
+            route: '/accounts',
+            currentRoute: currentRoute,
           ),
-          ListTile(
-            leading: Icon(Icons.category),
-            title: Text('Categories'),
-            onTap: () {
-              context.go('/categories');
-            },
+          _buildListTile(
+            context,
+            icon: Icons.category,
+            title: 'Categories',
+            route: '/categories',
+            currentRoute: currentRoute,
           ),
-          ListTile(
-            leading: Icon(Icons.settings),
-            title: Text('Settings'),
-            onTap: () {
-              // Asumiendo que tienes una ruta '/settings'
-            },
-          ),
+          // _buildListTile(
+          //   context,
+          //   icon: Icons.settings,
+          //   title: 'Settings',
+          //   route: '/settings',
+          //   currentRoute: currentRoute,
+          // ),
           ListTile(
             leading: Icon(Icons.logout),
             title: Text('Logout'),
@@ -79,6 +80,25 @@ class MyDrawer extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildListTile(BuildContext context,
+      {required IconData icon,
+      required String title,
+      required String route,
+      required String currentRoute}) {
+    final isSelected = currentRoute == route;
+    return ListTile(
+      leading: Icon(icon, color: isSelected ? Colors.blue : null),
+      title: Text(
+        title,
+        style: TextStyle(color: isSelected ? Colors.blue : null),
+      ),
+      selected: isSelected,
+      onTap: () {
+        context.go(route);
+      },
     );
   }
 }

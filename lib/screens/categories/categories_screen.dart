@@ -139,7 +139,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   //add icon categoyy
                   InkWell(
                     onTap: () {
-                      context.go('/categories/new_category');
+                      context.go('/categories/new_category/$_selectedTab');
                     },
                     child: CategoryIcon(
                       color: Colors.yellow,

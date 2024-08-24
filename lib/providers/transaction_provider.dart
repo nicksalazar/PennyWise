@@ -64,11 +64,15 @@ class TransactionProvider with ChangeNotifier {
   Future<void> deleteTransaction(TransactionModel transaction) async {
     try {
       _loadingProvider.setLoading(true);
-      await _repository.deleteTransaction(transaction.id);
-      //update accountbalance
-      await _accountProvider.adjustBalance(
-          transaction.accountId, transaction.amount);
-
+      await _repository.deleteTransaction(transaction.id).then((value) async {
+        await _accountProvider.updateBalance(
+          transaction.accountId,
+          transaction.amount,
+          transaction.transactionType == 'income' ? 'expense' : 'income',
+        );
+        _transactions.removeWhere((t) => t.id == transaction.id);
+      });
+      //return delete transactino sof
       notifyListeners();
     } catch (e) {
       print('Error deleting transaction: $e');

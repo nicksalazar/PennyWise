@@ -92,14 +92,14 @@ class _TransactionScreenState extends State<TransactionScreen> {
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: isExpense ? Colors.white : Colors.green,
+                  color: !isExpense ? Colors.white : Colors.green,
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Center(
                   child: Text(
                     'EXPENSES',
                     style: TextStyle(
-                      color: isExpense ? Colors.green : Colors.white,
+                      color: !isExpense ? Colors.green : Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -113,14 +113,14 @@ class _TransactionScreenState extends State<TransactionScreen> {
               child: Container(
                 padding: EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: !isExpense ? Colors.white : Colors.green,
+                  color: isExpense ? Colors.white : Colors.green,
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: Center(
                   child: Text(
                     'INCOME',
                     style: TextStyle(
-                      color: !isExpense ? Colors.green : Colors.white,
+                      color: isExpense ? Colors.green : Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),

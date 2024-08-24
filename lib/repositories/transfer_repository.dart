@@ -113,7 +113,7 @@ class TransferRepository {
 
         // Update balance
         account.balance += amount;
-
+        print("cuanto es el balance ${account.balance}");
         if (account.balance < 0) {
           throw Exception('Resulting balance cannot be negative');
         }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pennywise/models/transfer_model.dart';
@@ -28,10 +30,14 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
       body: Consumer2<AccountProvider, TransferProvider>(
           builder: (context, accountProvider, transferProvider, child) {
         final accounts = accountProvider.accounts;
-        final filteredToAccounts =
-            accounts.where((account) => account.id != fromAccount).toList();
-        final filteredFromAccounts =
-            accounts.where((account) => account.id != toAccount).toList();
+        final filteredToAccounts = accounts
+            .where((account) => account.id != fromAccount)
+            .where((account) => account.id != 'total')
+            .toList();
+        final filteredFromAccounts = accounts
+            .where((account) => account.id != toAccount)
+            .where((account) => account.id != 'total')
+            .toList();
         return Padding(
           padding: EdgeInsets.all(16.0),
           child: Form(
@@ -125,14 +131,16 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
                 SizedBox(height: 24),
                 Center(
                   child: ElevatedButton(
-                    child: Text('Add'),
+                    child: Text('Add transfer'),
                     onPressed: () {
                       // Process the transfer
                       if (_formKey.currentState!.validate()) {
                         final accountProvider = Provider.of<AccountProvider>(
-                            context,
-                            listen: false);
-                        transferProvider.addTransfer(
+                          context,
+                          listen: false,
+                        );
+                        transferProvider
+                            .addTransfer(
                           TransferModel(
                             id: '',
                             sourceAccountId: fromAccount!,
@@ -143,8 +151,40 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
                             type: 'transfer',
                           ),
                           accountProvider,
-                        );
-                        Navigator.pop(context);
+                        )
+                            .then((_) {
+                          Navigator.pop(context);
+                        }).catchError((error, stackTrace) {
+                          if (error is StateError &&
+                              error.message ==
+                                  'No cuentas con saldo suficiente para realizar la transferencia') {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: Colors.red,
+                                content: Text(
+                                  error.message,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            );
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                backgroundColor: Colors.red,
+                                content: Text(
+                                  error.toString(),
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                          // Re-throw the error with stack trace
+                          throw AsyncError(error, stackTrace);
+                        });
                       } else {
                         print("Form is invalid");
                       }
