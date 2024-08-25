@@ -99,6 +99,9 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  
+  MyApp({super.key});
+
   final GoRouter _router = GoRouter(
     routes: [
       GoRoute(
@@ -193,19 +196,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: "Flutter Notion Budget Tracker",
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
+      themeMode: ThemeMode.system,
       routerConfig: _router,
-      builder: (context, child) {
-        return Stack(
-          children: [
-            child!,
-            LoadingIndicator(),
-          ],
-        );
-      },
     );
   }
 }

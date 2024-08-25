@@ -3,44 +3,87 @@ import 'package:go_router/go_router.dart';
 import 'package:pennywise/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
-class MyDrawer extends StatelessWidget {
+class MyDrawer extends StatefulWidget {
+  @override
+  State<MyDrawer> createState() => _MyDrawerState();
+}
+
+class _MyDrawerState extends State<MyDrawer> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    //call to provider
+    Provider.of<AuthProvider>(context, listen: false).fetchUserInfo();
+  }
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-    final currentRoute = GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
+    final currentRoute =
+        GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
     print("current route ${currentRoute}");
-    // Ensure that user data is loaded
-    final user = authProvider.user;
 
     return Drawer(
       child: ListView(
         children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  radius: 30,
-                  backgroundImage: AssetImage('assets/icon/app_icon.png'),
+          Consumer<AuthProvider>(
+            builder: (context, authProvider, child) {
+              final userInfo = authProvider.userInfo;
+              return DrawerHeader(
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
                 ),
-                SizedBox(height: 8),
-                Text(
-                  user?.displayName ?? 'Nick Salazar',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundImage: AssetImage('assets/icon/app_icon.png'),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.black
+                              .withOpacity(0.5), // Fondo semitransparente
+                        ),
+                        child: Center(
+                          child: Text(
+                            userInfo['name']?[0].toUpperCase() ?? '?',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              shadows: [
+                                Shadow(
+                                  blurRadius: 4,
+                                  color: Colors.black,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      userInfo['name'] ?? 'Usuario',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      userInfo['email'] ?? 'No email',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  user?.email ?? 'example@gmail.com',
-                  style: TextStyle(
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
+              );
+            },
           ),
           _buildListTile(
             context,
@@ -63,13 +106,6 @@ class MyDrawer extends StatelessWidget {
             route: '/categories',
             currentRoute: currentRoute,
           ),
-          // _buildListTile(
-          //   context,
-          //   icon: Icons.settings,
-          //   title: 'Settings',
-          //   route: '/settings',
-          //   currentRoute: currentRoute,
-          // ),
           ListTile(
             leading: Icon(Icons.logout),
             title: Text('Logout'),
