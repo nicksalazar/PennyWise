@@ -46,7 +46,7 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
       Provider.of<TransactionProvider>(context, listen: false)
           .fetchTransactions();
       Provider.of<CategoryProvider>(context, listen: false);
-      Provider.of<AccountProvider>(context, listen: false);
+      Provider.of<AccountProvider>(context, listen: false).initializeData();
     });
     _tabController = TabController(length: 2, vsync: this);
     _scrollController.addListener(_onScroll);
@@ -62,6 +62,7 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
   Widget build(BuildContext context) {
     return Consumer2<AccountProvider, TransactionProvider>(
         builder: (context, accountProvider, transactionProvider, child) {
+          print("loading ${accountProvider.selectedAccountBalance}");
       return Scaffold(
         appBar: AppBar(
           leading: Builder(

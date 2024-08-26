@@ -16,7 +16,6 @@ class AccountProvider with ChangeNotifier {
     this._transferProvider,
     this._loadingProvider,
   ) {
-    fetchAccounts();
     _selectedAccountId = 'total';
   }
 
@@ -38,6 +37,11 @@ class AccountProvider with ChangeNotifier {
 
   String get selectedAccountId => _selectedAccountId;
   bool get hideBalance => _hideBalance;
+
+  Future<void> initializeData() async {
+    await fetchAccounts();
+    notifyListeners();
+  }
 
   double getTotalBalance() {
     return _accounts
@@ -174,8 +178,8 @@ class AccountProvider with ChangeNotifier {
       _loadingProvider.setLoading(true);
       await _repository.updateBalance(accountId, amount, transactionType);
       //update local variable
-      _accounts[_accounts.indexWhere((element) => element.id == accountId)].balance +=
-          transactionType == 'income' ? amount : -amount;
+      _accounts[_accounts.indexWhere((element) => element.id == accountId)]
+          .balance += transactionType == 'income' ? amount : -amount;
       notifyListeners();
     } catch (e) {
       // Handle error
@@ -189,8 +193,6 @@ class AccountProvider with ChangeNotifier {
   Account getAccountById(String id) {
     return _accounts.firstWhere((element) => element.id == id);
   }
-
-
 
   //adjust balance
   Future<void> adjustBalance(String accountId, double amount) async {

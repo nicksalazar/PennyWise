@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pennywise/providers/account_provider.dart';
 import 'package:pennywise/providers/auth_provider.dart';
@@ -29,11 +28,11 @@ import 'package:pennywise/screens/transactions/transaction_screen.dart';
 import 'package:pennywise/themes/app_theme.dart';
 import 'package:pennywise/widgets/loading_indicator.dart';
 import 'package:provider/provider.dart';
-import 'firebase_options.dart';
+
+import 'firebase/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await dotenv.load(fileName: '.env');
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
@@ -99,7 +98,6 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  
   MyApp({super.key});
 
   final GoRouter _router = GoRouter(
@@ -186,6 +184,17 @@ class MyApp extends StatelessWidget {
             path: 'login',
             builder: (context, state) => LoginScreen(),
           ),
+          GoRoute(
+            path: 'logout',
+            builder: (context, state) {
+              Provider.of<AuthProvider>(context, listen: false).signOut().then(
+                (value) {
+                  GoRouter.of(context).go('/auth/login');
+                },
+              );
+              return Container();
+            },
+          ),
         ],
       ),
       //Logout
@@ -200,6 +209,14 @@ class MyApp extends StatelessWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
       routerConfig: _router,
+      builder: (context, child) {
+        return Stack(
+          children: [
+            child!,
+            LoadingIndicator(),
+          ],
+        );
+      },
     );
   }
 }

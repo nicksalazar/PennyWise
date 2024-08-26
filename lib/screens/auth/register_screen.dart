@@ -128,7 +128,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
           borderRadius: BorderRadius.circular(8),
         ),
         filled: true,
-        fillColor: Colors.grey[200],
       ),
       obscureText: obscureText,
       keyboardType: keyboardType,

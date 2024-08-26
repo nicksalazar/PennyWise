@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pennywise/providers/auth_provider.dart';
+import 'package:pennywise/screens/auth/login_screen.dart';
 import 'package:provider/provider.dart';
 
 class MyDrawer extends StatefulWidget {
@@ -9,7 +10,6 @@ class MyDrawer extends StatefulWidget {
 }
 
 class _MyDrawerState extends State<MyDrawer> {
-
   @override
   void initState() {
     // TODO: implement initState
@@ -17,6 +17,7 @@ class _MyDrawerState extends State<MyDrawer> {
     //call to provider
     Provider.of<AuthProvider>(context, listen: false).fetchUserInfo();
   }
+
   @override
   Widget build(BuildContext context) {
     final currentRoute =
@@ -110,8 +111,11 @@ class _MyDrawerState extends State<MyDrawer> {
             leading: Icon(Icons.logout),
             title: Text('Logout'),
             onTap: () async {
-              await Provider.of<AuthProvider>(context, listen: false).signOut();
-              context.go('/auth/login');
+              await Provider.of<AuthProvider>(context, listen: false)
+                  .signOut()
+                  .then(
+                    (value) => GoRouter.of(context).go('/auth/logout'),
+                  );
             },
           ),
         ],
