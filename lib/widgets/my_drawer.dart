@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pennywise/providers/auth_provider.dart';
-import 'package:pennywise/screens/auth/login_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../screens/settings/language_settings_screen.dart';
 
 class MyDrawer extends StatefulWidget {
   @override
@@ -23,7 +25,7 @@ class _MyDrawerState extends State<MyDrawer> {
     final currentRoute =
         GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
     print("current route ${currentRoute}");
-
+    final l10n = AppLocalizations.of(context)!;
     return Drawer(
       child: ListView(
         children: [
@@ -89,27 +91,45 @@ class _MyDrawerState extends State<MyDrawer> {
           _buildListTile(
             context,
             icon: Icons.pie_chart,
-            title: 'Home',
+            title: l10n.myDrawerHome,
             route: '/home',
             currentRoute: currentRoute,
           ),
           _buildListTile(
             context,
             icon: Icons.monetization_on,
-            title: 'Accounts',
+            title: l10n.myDrawerAccounts,
             route: '/accounts',
             currentRoute: currentRoute,
           ),
           _buildListTile(
             context,
             icon: Icons.category,
-            title: 'Categories',
+            title: l10n.myDrawerCategories,
             route: '/categories',
             currentRoute: currentRoute,
           ),
+          _buildListTile(
+            context,
+            icon: Icons.settings,
+            title: l10n.myDrawerSettings,
+            route: '/settings',
+            currentRoute: currentRoute,
+          ),
+          ListTile(
+            leading: Icon(Icons.language),
+            title: Text(l10n.languageSettings),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => LanguageSettingsScreen()),
+              );
+            },
+          ),
           ListTile(
             leading: Icon(Icons.logout),
-            title: Text('Logout'),
+            title: Text(l10n.myDrawerLogout),
             onTap: () async {
               await Provider.of<AuthProvider>(context, listen: false)
                   .signOut()

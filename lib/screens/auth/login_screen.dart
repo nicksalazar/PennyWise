@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pennywise/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:pennywise/providers/auth_provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -17,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen>
   bool _obscureText = true;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
@@ -38,41 +40,22 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  // Future<void> _signInWithGoogle() async {
-  //   setState(() => _isLoading = true);
-  //   try {
-  //     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-  //     final GoogleSignInAuthentication? googleAuth =
-  //         await googleUser?.authentication;
-  //     final credential = GoogleAuthProvider.credential(
-  //       accessToken: googleAuth?.accessToken,
-  //       idToken: googleAuth?.idToken,
-  //     );
-  //     await FirebaseAuth.instance.signInWithCredential(credential);
-  //     context.go('/home');
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //           content:
-  //               Text('Error al iniciar sesión con Google: ${e.toString()}')),
-  //     );
-  //   }
-  //   setState(() => _isLoading = false);
-  // }
-
   Future<void> _signInWithEmailAndPassword() async {
     if (_formKey.currentState!.validate()) {
       setState(() => _isLoading = true);
       try {
-        await Provider.of<AuthProvider>(context, listen: false)
-            .signIn(
+        await Provider.of<AuthProvider>(context, listen: false).signIn(
           _emailController.text,
           _passwordController.text,
         );
         context.go('/home');
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al iniciar sesión: ${e.toString()}')),
+          SnackBar(
+            content: Text(
+              AppLocalizations.of(context)!.loginError(e.toString()),
+            ),
+          ),
         );
       }
       setState(() => _isLoading = false);
@@ -81,6 +64,7 @@ class _LoginScreenState extends State<LoginScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: SafeArea(
         child: FadeTransition(
@@ -95,15 +79,17 @@ class _LoginScreenState extends State<LoginScreen>
                   children: [
                     SizedBox(height: 48),
                     Hero(
-                      tag: 'app_icon',
-                      child: Image.asset(
-                        'assets/icon/app_icon.png',
-                        height: 120,
+                      tag: 'login_icon',
+                      child: ClipOval(
+                        child: Image.asset(
+                          'assets/icon/app_icon.png',
+                          height: 120,
+                        ),
                       ),
                     ),
                     SizedBox(height: 48),
                     Text(
-                      'Bienvenido',
+                      l10n.loginTitle,
                       style:
                           Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
@@ -115,7 +101,8 @@ class _LoginScreenState extends State<LoginScreen>
                     TextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(
-                        labelText: 'Correo electrónico',
+                        labelText: l10n.loginEmailLabel,
+                       
                         prefixIcon: Icon(Icons.email_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -124,11 +111,11 @@ class _LoginScreenState extends State<LoginScreen>
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese su correo electrónico';
+                          return l10n.loginEmailValidationEmpty;
                         }
                         if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
                             .hasMatch(value)) {
-                          return 'Ingrese un correo electrónico válido';
+                          return l10n.loginEmailValidationInvalid;
                         }
                         return null;
                       },
@@ -137,7 +124,7 @@ class _LoginScreenState extends State<LoginScreen>
                     TextFormField(
                       controller: _passwordController,
                       decoration: InputDecoration(
-                        labelText: 'Contraseña',
+                        labelText: l10n.loginPasswordLabel,
                         prefixIcon: Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
@@ -155,10 +142,10 @@ class _LoginScreenState extends State<LoginScreen>
                       obscureText: _obscureText,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return 'Por favor ingrese su contraseña';
+                          return l10n.loginPasswordValidationEmpty;
                         }
                         if (value.length < 6) {
-                          return 'La contraseña debe tener al menos 6 caracteres';
+                          return l10n.loginPasswordValidationLength;
                         }
                         return null;
                       },
@@ -176,7 +163,7 @@ class _LoginScreenState extends State<LoginScreen>
                                     AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
-                          : Text('Iniciar sesión'),
+                          : Text(l10n.loginButton),
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -184,24 +171,12 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                       ),
                     ),
-                    SizedBox(height: 16),
-                    // OutlinedButton.icon(
-                    //   onPressed: _isLoading ? null : _signInWithGoogle,
-                    //   icon: FaIcon(FontAwesomeIcons.google, size: 18),
-                    //   label: Text('Continuar con Google'),
-                    //   style: OutlinedButton.styleFrom(
-                    //     padding: EdgeInsets.symmetric(vertical: 16),
-                    //     shape: RoundedRectangleBorder(
-                    //       borderRadius: BorderRadius.circular(12),
-                    //     ),
-                    //   ),
-                    // ),
                     SizedBox(height: 24),
                     TextButton(
                       onPressed: () {
                         context.go('/auth/register');
                       },
-                      child: Text('¿No tienes una cuenta? Regístrate'),
+                      child: Text(l10n.loginRegisterPrompt),
                     ),
                   ],
                 ),

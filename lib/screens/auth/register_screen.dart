@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pennywise/main.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RegistrationScreen extends StatefulWidget {
   @override
@@ -19,9 +19,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Registro', style: TextStyle(color: Colors.white)),
+        title: Text(
+          l10n.registerTitle,
+          style: TextStyle(color: Colors.white),
+        ),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -33,69 +37,67 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               children: [
                 SizedBox(height: 20),
                 Text(
-                  'Crea tu cuenta',
+                  l10n.registerTitle,
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                   textAlign: TextAlign.center,
                 ),
                 SizedBox(height: 20),
                 Hero(
                   tag: 'app_icon',
-                  child: Image.asset(
-                    'assets/icon/app_icon.png',
-                    height: 120,
+                  child: ClipOval(
+                    child: Image.asset(
+                      'assets/icon/app_icon.png',
+                      height: 120,
+                    ),
                   ),
                 ),
                 SizedBox(height: 20),
                 _buildTextField(
                   controller: _nameController,
-                  label: 'Nombre completo',
+                  label: l10n.registerNameLabel,
                   icon: Icons.person,
                   validator: (value) =>
-                      value!.isEmpty ? 'Ingrese su nombre' : null,
+                      value!.isEmpty ? l10n.registerNameValidationEmpty : null,
                 ),
                 SizedBox(height: 16),
                 _buildTextField(
                   controller: _emailController,
-                  label: 'Correo electrónico',
+                  label: l10n.registerEmailLabel,
                   icon: Icons.email,
-                  validator: (value) =>
-                      !value!.contains('@') ? 'Ingrese un correo válido' : null,
+                  validator: (value) => !value!.contains('@')
+                      ? l10n.registerEmailValidationEmpty
+                      : null,
                 ),
                 SizedBox(height: 16),
                 _buildTextField(
                   controller: _passwordController,
-                  label: 'Contraseña',
+                  label: l10n.registerPasswordLabel,
                   icon: Icons.lock,
                   obscureText: true,
                   validator: (value) => value!.length < 6
-                      ? 'La contraseña debe tener al menos 6 caracteres'
+                      ? l10n.registerPasswordValidationEmpty
                       : null,
                 ),
                 SizedBox(height: 16),
                 _buildTextField(
                   controller: _confirmPasswordController,
-                  label: 'Confirmar contraseña',
+                  label: l10n.registerConfirmPasswordLabel,
                   icon: Icons.lock_outline,
                   obscureText: true,
                   validator: (value) => value != _passwordController.text
-                      ? 'Las contraseñas no coinciden'
+                      ? l10n.registerConfirmPasswordValidationEmpty
                       : null,
                 ),
                 SizedBox(height: 16),
-                _buildTextField(
-                  controller: _monthlyIncomeController,
-                  label: 'Ingreso mensual aproximado',
-                  icon: Icons.attach_money,
-                  keyboardType: TextInputType.number,
-                  validator: (value) =>
-                      value!.isEmpty ? 'Ingrese su ingreso mensual' : null,
-                ),
                 SizedBox(height: 24),
                 ElevatedButton(
                   onPressed: _register,
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 16.0),
-                    child: Text('Registrarse', style: TextStyle(fontSize: 18)),
+                    child: Text(
+                      l10n.registerButton,
+                      style: TextStyle(fontSize: 18),
+                    ),
                   ),
                   style: ElevatedButton.styleFrom(
                     shape: RoundedRectangleBorder(
@@ -150,7 +152,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             .set({
           'name': _nameController.text,
           'email': _emailController.text,
-          'monthlyIncome': double.parse(_monthlyIncomeController.text),
         });
 
         await FirebaseFirestore.instance
