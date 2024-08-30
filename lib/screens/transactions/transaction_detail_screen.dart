@@ -18,17 +18,32 @@ class TransactionDetailScreen extends StatefulWidget {
       _TransactionDetailScreenState();
 }
 
-class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
+class _TransactionDetailScreenState extends State<TransactionDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    // Fetch transactions after the widget is built
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _fadeAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+
     Future.microtask(() {
       Provider.of<TransactionProvider>(context, listen: false)
           .fetchTransactions();
       Provider.of<AccountProvider>(context, listen: false).fetchAccounts();
-    });
+    }).then((_) => _animationController.forward());
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -77,79 +92,67 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
             actions: [
               IconButton(
                 icon: Icon(Icons.edit),
-                onPressed: () {
-                  // TODO: Implement edit functionality
-                },
+                onPressed: () => _editTransaction(context, transaction),
               ),
+              // IconButton(
+              //   icon: Icon(Icons.share),
+              //   onPressed: () =>
+              //       _shareTransaction(transaction, category, account),
+              // ),
             ],
           ),
-          body: Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'S/.${transaction.amount.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                SizedBox(height: 16),
-                _buildDetailRow('Description', transaction.description),
-                _buildDetailRow('Category', category.name),
-                _buildDetailRow('Account', account.name),
-                _buildDetailRow('Date', _formatDate(transaction.date)),
-                SizedBox(height: 32),
-                Center(
-                  child: ElevatedButton(
-                    child: Text('Delete Transaction'),
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (BuildContext dialogContext) {
-                          return AlertDialog(
-                            title: Text('Confirm Deletion'),
-                            content: Text(
-                                'Are you sure you want to delete this transaction?'),
-                            actions: <Widget>[
-                              TextButton(
-                                child: Text('Cancel'),
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                              ),
-                              TextButton(
-                                child: Text('Delete'),
-                                onPressed: () async {
-                                  await transactionProvider
-                                      .deleteTransaction(transaction)
-                                      .then(
-                                    (_) {
-                                      ScaffoldMessenger.of(dialogContext)
-                                          .showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                              'Transaction deleted successfully'),
-                                          duration: Duration(seconds: 2),
-                                        ),
-                                      );
-                                      Navigator.of(dialogContext)
-                                          .pop(); // Close the dialog
-                                      GoRouter.of(context).go(
-                                          '/home'); // Navigate to home and remove all previous routes
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red,
+          body: FadeTransition(
+            opacity: _fadeAnimation,
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'S/.${transaction.amount.toStringAsFixed(2)}',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                  SizedBox(height: 24),
+                  _buildDetailGroup(
+                    'Transaction Details',
+                    [
+                      _buildDetailRow('Description', transaction.description,
+                          Icons.description),
+                      _buildDetailRow('Date', _formatDate(transaction.date),
+                          Icons.calendar_today),
+                    ],
+                  ),
+                  SizedBox(height: 16),
+                  _buildDetailGroup(
+                    'Category and Account',
+                    [
+                      _buildDetailRow('Category', category.name, Icons.category,
+                          color: Color(
+                              int.parse('0xFF${category.color.substring(1)}'))),
+                      _buildDetailRow(
+                          'Account', account.name, Icons.account_balance,
+                          color: Color(
+                              int.parse('0xFF${account.color.substring(1)}'))),
+                    ],
+                  ),
+                  Spacer(),
+                  Center(
+                    child: ElevatedButton.icon(
+                      icon: Icon(Icons.delete),
+                      label: Text('Delete Transaction'),
+                      onPressed: () => _deleteTransaction(context, transaction),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.error,
+                        foregroundColor: Theme.of(context).colorScheme.onError,
+                        minimumSize: Size(200, 50),
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         );
@@ -157,14 +160,38 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _buildDetailGroup(String title, List<Widget> children) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        SizedBox(height: 8),
+        ...children,
+      ],
+    );
+  }
+
+  Widget _buildDetailRow(String label, String value, IconData icon,
+      {Color? color}) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
-          Text(value),
+          Icon(icon,
+              color: color ?? Theme.of(context).iconTheme.color, size: 24),
+          SizedBox(width: 8),
+          Expanded(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(value),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -172,5 +199,60 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
+  }
+
+  void _editTransaction(BuildContext context, TransactionModel transaction) {
+    // TODO: Implement edit functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Edit functionality coming soon!')),
+    );
+  }
+
+//   void _shareTransaction(
+//       TransactionModel transaction, Category category, Account account) {
+//     final String shareText = '''
+// Transaction Details:
+// Amount: S/.${transaction.amount.toStringAsFixed(2)}
+// Description: ${transaction.description}
+// Date: ${_formatDate(transaction.date)}
+// Category: ${category.name}
+// Account: ${account.name}
+// ''';
+//     Share.share(shareText, subject: 'Transaction Details');
+//   }
+
+  void _deleteTransaction(BuildContext context, TransactionModel transaction) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text('Confirm Deletion'),
+          content: Text('Are you sure you want to delete this transaction?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await Provider.of<TransactionProvider>(context, listen: false)
+                    .deleteTransaction(transaction)
+                    .then((_) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Transaction deleted successfully'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                  GoRouter.of(context).go('/home');
+                });
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

@@ -23,20 +23,32 @@ class TransactionsByCategory extends StatefulWidget {
   _TransactionsByCategoryState createState() => _TransactionsByCategoryState();
 }
 
-class _TransactionsByCategoryState extends State<TransactionsByCategory> {
+class _TransactionsByCategoryState extends State<TransactionsByCategory>
+    with SingleTickerProviderStateMixin {
   String _selectedPeriod = 'Month';
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    // Fetch categories after the widget is built
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+    _fadeAnimation =
+        Tween<double>(begin: 0.0, end: 1.0).animate(_animationController);
+
     Future.microtask(() {
       Provider.of<TransactionProvider>(context, listen: false)
           .fetchCategories();
-          //category provider
-      Provider.of<CategoryProvider>(context, listen: false);
-    });
+    }).then((_) => _animationController.forward());
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -47,15 +59,8 @@ class _TransactionsByCategoryState extends State<TransactionsByCategory> {
         actions: [
           IconButton(
             icon: Icon(Icons.search),
-            onPressed: () {
-              // TODO: Implement search functionality
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.download),
-            onPressed: () {
-              // TODO: Implement download functionality
-            },
+            onPressed: () => _searchTransactions(context),
+            tooltip: 'Search transactions',
           ),
         ],
       ),
@@ -70,23 +75,25 @@ class _TransactionsByCategoryState extends State<TransactionsByCategory> {
               .toList();
           final totalAmount = transactionProvider.getTotalAmount(transactions);
 
-          return Column(
-            children: [
-              _buildTotalAmountHeader(context, totalAmount),
-              _buildFilterOptions(),
-              Expanded(
-                child: _buildTransactionList(context, transactions,
-                    transactionProvider, categoryProvider),
-              ),
-            ],
+          return FadeTransition(
+            opacity: _fadeAnimation,
+            child: Column(
+              children: [
+                _buildTotalAmountHeader(context, totalAmount),
+                _buildFilterOptions(),
+                Expanded(
+                  child: _buildTransactionList(context, transactions,
+                      transactionProvider, categoryProvider),
+                ),
+              ],
+            ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
-        onPressed: () {
-          // TODO: Navigate to add transaction screen
-        },
+        onPressed: () => _addNewTransaction(context),
+        tooltip: 'Add new transaction',
       ),
     );
   }
@@ -100,12 +107,17 @@ class _TransactionsByCategoryState extends State<TransactionsByCategory> {
         children: [
           Text(
             'Total',
-            style: TextStyle(color: Colors.white, fontSize: 18),
+            style: Theme.of(context)
+                .textTheme
+                .titleLarge
+                ?.copyWith(color: Colors.white),
           ),
           Text(
             'S/.${totalAmount.toStringAsFixed(2)}',
-            style: TextStyle(
-                color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
           ),
         ],
       ),
@@ -145,55 +157,114 @@ class _TransactionsByCategoryState extends State<TransactionsByCategory> {
       List<TransactionModel> transactions,
       TransactionProvider transactionProvider,
       CategoryProvider categoryProvider) {
-    return ListView.builder(
-      itemCount: transactions.length,
-      itemBuilder: (context, index) {
-        final transaction = transactions[index];
-        return FutureBuilder<Category>(
-          future: categoryProvider.getCategoryById(transaction.categoryId),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return ListTile(
-                title: Text('Loading...'),
-              );
-            } else if (snapshot.hasError) {
-              return ListTile(
-                title: Text('Error: ${snapshot.error}'),
-              );
-            } else if (!snapshot.hasData) {
-              return ListTile(
-                title: Text('No category found'),
-              );
-            } else {
-              final category = snapshot.data!;
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: Color(
-                      int.parse(category.color.replaceFirst('#', '0xff'))),
-                  child: Icon(getIconDataByName(category.icon),
-                      color: Colors.white),
-                ),
-                title: Text(category.name),
-                subtitle:
-                    Text(DateFormat('MMMM d, y').format(transaction.date)),
-                trailing: Text(
-                  'S/.${transaction.amount.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: transaction.transactionType == 'expense'
-                        ? Colors.red
-                        : Colors.green,
-                  ),
-                ),
-                onTap: () {
-                  // TODO: Navigate to transaction detail screen
-                  context.go("/home/transaction_detail/${transaction.id}");
+    return transactions.isEmpty
+        ? Center(child: Text('No transactions found'))
+        : ListView.builder(
+            itemCount: transactions.length,
+            itemBuilder: (context, index) {
+              final transaction = transactions[index];
+              return FutureBuilder<Category>(
+                future:
+                    categoryProvider.getCategoryById(transaction.categoryId),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return _buildSkeletonListTile();
+                  } else if (snapshot.hasError) {
+                    return ListTile(
+                      title: Text('Error: ${snapshot.error}'),
+                    );
+                  } else if (!snapshot.hasData) {
+                    return ListTile(
+                      title: Text('No category found'),
+                    );
+                  } else {
+                    final category = snapshot.data!;
+                    return _buildTransactionListTile(
+                        context, transaction, category);
+                  }
                 },
               );
-            }
-          },
-        );
-      },
+            },
+          );
+  }
+
+  Widget _buildSkeletonListTile() {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: Colors.grey[300],
+      ),
+      title: Container(
+        width: 100,
+        height: 16,
+        color: Colors.grey[300],
+      ),
+      subtitle: Container(
+        width: 150,
+        height: 14,
+        color: Colors.grey[300],
+      ),
+      trailing: Container(
+        width: 60,
+        height: 20,
+        color: Colors.grey[300],
+      ),
     );
+  }
+
+  Widget _buildTransactionListTile(
+      BuildContext context, TransactionModel transaction, Category category) {
+    return ListTile(
+      leading: Hero(
+        tag: 'category_icon_${transaction.id}',
+        child: CircleAvatar(
+          backgroundColor:
+              Color(int.parse(category.color.replaceFirst('#', '0xff'))),
+          child: Icon(getIconDataByName(category.icon), color: Colors.white),
+        ),
+      ),
+      title: Text(
+        category.name,
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+      subtitle: Text(
+        DateFormat('MMMM d, y').format(transaction.date),
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+      trailing: Text(
+        'S/.${transaction.amount.toStringAsFixed(2)}',
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: transaction.transactionType == 'expense'
+                  ? Colors.red
+                  : Colors.green,
+            ),
+      ),
+      onTap: () => _navigateToTransactionDetail(context, transaction.id),
+    );
+  }
+
+  void _searchTransactions(BuildContext context) {
+    // TODO: Implement search functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Search functionality coming soon!')),
+    );
+  }
+
+  void _addNewTransaction(BuildContext context) {
+    // TODO: Navigate to add transaction screen
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Add transaction functionality coming soon!')),
+    );
+  }
+
+  void _navigateToTransactionDetail(
+      BuildContext context, String transactionId) {
+    context.go("/home/transaction_detail/$transactionId");
+  }
+}
+
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${this.substring(1)}";
   }
 }

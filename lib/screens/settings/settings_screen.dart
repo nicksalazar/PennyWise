@@ -23,9 +23,7 @@ class SettingsScreen extends StatelessWidget {
           icon: Icon(
             Icons.arrow_back,
           ),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: ListView(
@@ -40,8 +38,14 @@ class SettingsScreen extends StatelessWidget {
                 }
               },
               items: [
-                DropdownMenuItem(value: 'en', child: Text('English')),
-                DropdownMenuItem(value: 'es', child: Text('Español')),
+                DropdownMenuItem(
+                  value: 'en',
+                  child: Text('English'),
+                ),
+                DropdownMenuItem(
+                  value: 'es',
+                  child: Text('Español'),
+                ),
               ],
             ),
           ),

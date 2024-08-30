@@ -376,9 +376,11 @@ class _TransactionScreenState extends State<TransactionScreen> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        child: Text('Add Transaction',
-            style: theme.textTheme.titleMedium!
-                .copyWith(color: theme.colorScheme.onPrimary)),
+        child: Text(
+          'Add Transaction',
+          style: theme.textTheme.titleMedium!
+              .copyWith(color: theme.colorScheme.onPrimary),
+        ),
         style: ElevatedButton.styleFrom(
           backgroundColor: theme.colorScheme.primary,
           padding: EdgeInsets.symmetric(vertical: 16),
