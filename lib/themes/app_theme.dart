@@ -1,110 +1,218 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const int _greenPrimaryValue = 0xFF4CAF50;
+  // Colores del logo
+  static const Color antiqueWhite = Color(0xFFFCEFE0);
+  static const Color richBlack = Color(0xFF02212F);
+  static const Color raisinBlack = Color(0xFF3F333E);
+  static const Color folly = Color(0xFFF7485E);
+  static const Color linen = Color(0xFFFCEFE2);
+
+  // Nuevos colores para mejorar la paleta
+  static const Color accentBlue = Color(0xFF3498DB);
+  static const Color successGreen = Color(0xFF2ECC71);
+  static const Color warningYellow = Color(0xFFF1C40F);
+
+  // Otras configuraciones
   static const MaterialColor primarySwatch = MaterialColor(
-    _greenPrimaryValue,
+    0xFFF7485E,
     <int, Color>{
-      50: Color(0xFFE8F5E9),
-      100: Color(0xFFC8E6C9),
-      200: Color(0xFFA5D6A7),
-      300: Color(0xFF81C784),
-      400: Color(0xFF66BB6A),
-      500: Color(_greenPrimaryValue),
-      600: Color(0xFF43A047),
-      700: Color(0xFF388E3C),
-      800: Color(0xFF2E7D32),
-      900: Color(0xFF1B5E20),
+      50: Color(0xFFFFEBEE),
+      100: Color(0xFFFFCDD2),
+      200: Color(0xFFEF9A9A),
+      300: Color(0xFFE57373),
+      400: Color(0xFFEF5350),
+      500: Color(0xFFF7485E),
+      600: Color(0xFFE53935),
+      700: Color(0xFFD32F2F),
+      800: Color(0xFFC62828),
+      900: Color(0xFFB71C1C),
     },
   );
 
   static final ThemeData lightTheme = ThemeData(
     primarySwatch: primarySwatch,
     brightness: Brightness.light,
-    drawerTheme: DrawerThemeData(
-      elevation: 0,
-    ),
-    scaffoldBackgroundColor: Color(0xFFF5F5F5),
+    scaffoldBackgroundColor: linen,
     appBarTheme: AppBarTheme(
-      color: primarySwatch,
+      color: folly,
+      elevation: 0,
       iconTheme: IconThemeData(color: Colors.white),
-      titleTextStyle:
-          TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      toolbarTextStyle:
-          TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      titleTextStyle: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+    ),
+    drawerTheme: DrawerThemeData(
+      backgroundColor: antiqueWhite,
     ),
     tabBarTheme: TabBarTheme(
-      labelColor: Colors.white,
-      unselectedLabelColor: Colors.white70,
+      labelColor: folly,
+      unselectedLabelColor: Colors.grey[600],
+      indicator: UnderlineTabIndicator(
+        borderSide: BorderSide(color: folly, width: 2),
+      ),
     ),
     colorScheme: ColorScheme.light(
-      primary: primarySwatch,
-      secondary: Colors.amberAccent,
+      primary: folly,
+      secondary: accentBlue,
       onPrimary: Colors.white,
-      onSecondary: Colors.black,
+      onSecondary: Colors.white,
+      surface: Colors.white,
+      onSurface: raisinBlack,
     ),
-    iconTheme: IconThemeData(color: Colors.grey[800]),
-    textTheme: const TextTheme(
-      headlineMedium: TextStyle(fontWeight: FontWeight.bold),
-      bodyMedium: TextStyle(color: Colors.black87),
+    cardTheme: CardTheme(
+      color: Colors.white,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    iconTheme: IconThemeData(color: raisinBlack),
+    textTheme: TextTheme(
+      headlineLarge: TextStyle(color: richBlack, fontWeight: FontWeight.bold, fontSize: 28),
+      headlineMedium: TextStyle(color: richBlack, fontWeight: FontWeight.bold, fontSize: 24),
+      titleLarge: TextStyle(color: raisinBlack, fontWeight: FontWeight.w600, fontSize: 20),
+      bodyLarge: TextStyle(color: raisinBlack, fontSize: 16),
+      bodyMedium: TextStyle(color: raisinBlack, fontSize: 14),
     ),
     inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: primarySwatch),
+        borderSide: BorderSide(color: folly, width: 2),
+        borderRadius: BorderRadius.circular(12),
       ),
+      filled: true,
+      fillColor: antiqueWhite.withOpacity(0.5),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.amber,
-        foregroundColor: Colors.black87,
+        backgroundColor: folly,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: folly,
+        side: BorderSide(color: folly),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: accentBlue,
+        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: antiqueWhite,
+      disabledColor: Colors.grey[300],
+      selectedColor: folly,
+      secondarySelectedColor: accentBlue,
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      labelStyle: TextStyle(color: raisinBlack),
+      secondaryLabelStyle: TextStyle(color: Colors.white),
+      brightness: Brightness.light,
+    ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: richBlack,
+      contentTextStyle: TextStyle(color: Colors.white),
+      actionTextColor: folly,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12))),
     ),
   );
 
   static final ThemeData darkTheme = ThemeData(
     primarySwatch: primarySwatch,
     brightness: Brightness.dark,
-    drawerTheme: DrawerThemeData(
-      elevation: 0,
-      
-    ),  
-    scaffoldBackgroundColor: Color(0xFF121212),
+    scaffoldBackgroundColor: richBlack,
     appBarTheme: AppBarTheme(
-      color: Colors.grey[900],
-      iconTheme: IconThemeData(color: Colors.white),
-      titleTextStyle:
-          TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      toolbarTextStyle:
-          TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+      color: raisinBlack,
+      elevation: 0,
+      iconTheme: IconThemeData(color: antiqueWhite),
+      titleTextStyle: TextStyle(color: antiqueWhite, fontWeight: FontWeight.bold, fontSize: 20),
+    ),
+    drawerTheme: DrawerThemeData(
+      backgroundColor: Color(0xFF1A1A1A),
     ),
     tabBarTheme: TabBarTheme(
-      labelColor: Colors.white,
-      unselectedLabelColor: Colors.white70,
+      labelColor: folly,
+      unselectedLabelColor: Colors.grey[400],
+      indicator: UnderlineTabIndicator(
+        borderSide: BorderSide(color: folly, width: 2),
+      ),
     ),
     colorScheme: ColorScheme.dark(
-      primary: primarySwatch[300]!,
-      secondary: Colors.amberAccent[200]!,
-      onPrimary: Colors.black,
-      onSecondary: Colors.black,
+      primary: folly,
+      secondary: accentBlue,
+      onPrimary: Colors.white,
+      onSecondary: Colors.white,
+      surface: Color(0xFF2C2C2C),
+      onSurface: antiqueWhite,
     ),
-    iconTheme: IconThemeData(color: Colors.grey[400]),
+    cardTheme: CardTheme(
+      color: Color(0xFF2C2C2C),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    ),
+    iconTheme: IconThemeData(color: antiqueWhite),
     textTheme: TextTheme(
-      headlineMedium:
-          TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-      bodyMedium: TextStyle(color: Colors.white70),
+      headlineLarge: TextStyle(color: antiqueWhite, fontWeight: FontWeight.bold, fontSize: 28),
+      headlineMedium: TextStyle(color: antiqueWhite, fontWeight: FontWeight.bold, fontSize: 24),
+      titleLarge: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 20),
+      bodyLarge: TextStyle(color: Colors.white70, fontSize: 16),
+      bodyMedium: TextStyle(color: Colors.white70, fontSize: 14),
     ),
     inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: primarySwatch[300]!),
+        borderSide: BorderSide(color: folly, width: 2),
+        borderRadius: BorderRadius.circular(12),
       ),
+      filled: true,
+      fillColor: Color(0xFF333333),
+      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: Colors.amber[700],
+        backgroundColor: folly,
         foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
       ),
+    ),
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: folly,
+        side: BorderSide(color: folly),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: accentBlue,
+        textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    ),
+    chipTheme: ChipThemeData(
+      backgroundColor: Color(0xFF333333),
+      disabledColor: Colors.grey[800],
+      selectedColor: folly,
+      secondarySelectedColor: accentBlue,
+      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      labelStyle: TextStyle(color: antiqueWhite),
+      secondaryLabelStyle: TextStyle(color: Colors.white),
+      brightness: Brightness.dark,
+    ),
+    snackBarTheme: SnackBarThemeData(
+      backgroundColor: Color(0xFF333333),
+      contentTextStyle: TextStyle(color: Colors.white),
+      actionTextColor: folly,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(12))),
     ),
   );
 }

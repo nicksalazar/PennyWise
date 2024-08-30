@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pennywise/models/transfer_model.dart';
@@ -25,177 +24,203 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create transfer'),
+        title: Text('Create Transfer'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+          tooltip: 'Back',
+        ),
       ),
       body: Consumer2<AccountProvider, TransferProvider>(
-          builder: (context, accountProvider, transferProvider, child) {
-        final accounts = accountProvider.accounts;
-        final filteredToAccounts = accounts
-            .where((account) => account.id != fromAccount)
-            .where((account) => account.id != 'total')
-            .toList();
-        final filteredFromAccounts = accounts
-            .where((account) => account.id != toAccount)
-            .where((account) => account.id != 'total')
-            .toList();
-        return Padding(
-          padding: EdgeInsets.all(16.0),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                DropdownButtonFormField<String>(
-                  decoration:
-                      InputDecoration(labelText: 'Transfer from account'),
-                  value: fromAccount,
-                  onChanged: (String? newValue) {
-                    setState(() {
+        builder: (context, accountProvider, transferProvider, child) {
+          final accounts = accountProvider.accounts
+              .where((account) => account.id != 'total')
+              .toList();
+          return SingleChildScrollView(
+            padding: EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildAccountSelector(
+                    accounts,
+                    'From Account',
+                    fromAccount,
+                    (newValue) => setState(() {
                       fromAccount = newValue;
-                      if (toAccount == newValue) {
-                        toAccount = null;
-                      }
-                    });
-                  },
-                  items: filteredFromAccounts
-                      .map<DropdownMenuItem<String>>((account) {
-                    return DropdownMenuItem<String>(
-                      value: account.id,
-                      child: Text(account.name),
-                    );
-                  }).toList(),
-                ),
-                SizedBox(height: 16),
-                DropdownButtonFormField<String>(
-                  decoration: InputDecoration(labelText: 'Transfer to account'),
-                  value: toAccount,
-                  onChanged: (String? newValue) {
-                    setState(() {
+                      if (toAccount == newValue) toAccount = null;
+                    }),
+                    Icons.account_balance,
+                  ),
+                  SizedBox(height: 16),
+                  _buildAccountSelector(
+                    accounts,
+                    'To Account',
+                    toAccount,
+                    (newValue) => setState(() {
                       toAccount = newValue;
-                      if (fromAccount == newValue) {
-                        fromAccount = null;
-                      }
-                    });
-                  },
-                  items: filteredToAccounts
-                      .map<DropdownMenuItem<String>>((account) {
-                    return DropdownMenuItem<String>(
-                      value: account.id,
-                      child: Text(account.name),
-                    );
-                  }).toList(),
-                ),
-                SizedBox(height: 16),
-                TextFormField(
-                  controller: amountController,
-                  decoration: InputDecoration(
-                    labelText: 'Transfer amount',
-                    suffixText: 'PEN',
+                      if (fromAccount == newValue) fromAccount = null;
+                    }),
+                    Icons.account_balance_wallet,
                   ),
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  inputFormatters: <TextInputFormatter>[
-                    FilteringTextInputFormatter.digitsOnly,
-                  ],
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter some text';
-                    }
-                    return null;
-                  },
-                ),
-                SizedBox(height: 16),
-                ListTile(
-                  title: Text(
-                      "Date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}"),
-                  trailing: Icon(Icons.calendar_today),
-                  onTap: () async {
-                    print("selected date: $selectedDate");
-                    final DateTime? picked = await showDatePicker(
-                      context: context,
-                      initialDate: selectedDate,
-                      firstDate: DateTime(2000),
-                      lastDate: DateTime(2025),
-                    );
-                    if (picked != null && picked != selectedDate)
-                      setState(() {
-                        selectedDate = picked;
-                      });
-                  },
-                ),
-                SizedBox(height: 16),
-                TextFormField(
-                  controller: commentController,
-                  decoration: InputDecoration(labelText: 'Comment'),
-                  maxLines: 3,
-                ),
-                SizedBox(height: 24),
-                Center(
-                  child: ElevatedButton(
-                    child: Text('Add transfer'),
-                    onPressed: () {
-                      // Process the transfer
-                      if (_formKey.currentState!.validate()) {
-                        final accountProvider = Provider.of<AccountProvider>(
-                          context,
-                          listen: false,
-                        );
-                        transferProvider
-                            .addTransfer(
-                          TransferModel(
-                            id: '',
-                            sourceAccountId: fromAccount!,
-                            destinationAccountId: toAccount!,
-                            amount: double.parse(amountController.text),
-                            date: selectedDate,
-                            comment: commentController.text,
-                            type: 'transfer',
-                          ),
-                          accountProvider,
-                        )
-                            .then((_) {
-                          Navigator.pop(context);
-                        }).catchError((error, stackTrace) {
-                          if (error is StateError &&
-                              error.message ==
-                                  'No cuentas con saldo suficiente para realizar la transferencia') {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: Colors.red,
-                                content: Text(
-                                  error.message,
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            );
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                backgroundColor: Colors.red,
-                                content: Text(
-                                  error.toString(),
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
-                          // Re-throw the error with stack trace
-                          throw AsyncError(error, stackTrace);
-                        });
-                      } else {
-                        print("Form is invalid");
-                      }
-                    },
-                  ),
-                ),
-              ],
+                  SizedBox(height: 16),
+                  _buildAmountField(),
+                  SizedBox(height: 16),
+                  _buildDatePicker(),
+                  SizedBox(height: 16),
+                  _buildCommentField(),
+                  SizedBox(height: 24),
+                  _buildSubmitButton(
+                      context, accountProvider, transferProvider),
+                ],
+              ),
             ),
-          ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildAccountSelector(List<dynamic> accounts, String label,
+      String? value, Function(String?) onChanged, IconData icon) {
+    return DropdownButtonFormField<String>(
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(),
+      ),
+      value: value,
+      onChanged: onChanged,
+      items: accounts.map<DropdownMenuItem<String>>((account) {
+        return DropdownMenuItem<String>(
+          value: account.id,
+          child: Text(account.name),
         );
-      }),
+      }).toList(),
+      validator: (value) => value == null ? 'Please select an account' : null,
+    );
+  }
+
+  Widget _buildAmountField() {
+    return TextFormField(
+      controller: amountController,
+      decoration: InputDecoration(
+        labelText: 'Transfer Amount',
+        prefixIcon: Icon(Icons.attach_money),
+        suffixText: 'PEN',
+        border: OutlineInputBorder(),
+      ),
+      keyboardType: TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+      ],
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter an amount';
+        }
+        if (double.tryParse(value) == null) {
+          return 'Please enter a valid number';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildDatePicker() {
+    return InkWell(
+      onTap: () => _selectDate(context),
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: 'Transfer Date',
+          prefixIcon: Icon(Icons.calendar_today),
+          border: OutlineInputBorder(),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(DateFormat('yyyy-MM-dd').format(selectedDate)),
+            Icon(Icons.arrow_drop_down),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
+  Widget _buildCommentField() {
+    return TextFormField(
+      controller: commentController,
+      decoration: InputDecoration(
+        labelText: 'Comment',
+        prefixIcon: Icon(Icons.comment),
+        border: OutlineInputBorder(),
+      ),
+      maxLines: 3,
+    );
+  }
+
+  Widget _buildSubmitButton(BuildContext context,
+      AccountProvider accountProvider, TransferProvider transferProvider) {
+    return ElevatedButton(
+      child: Text('Add Transfer'),
+      onPressed: () =>
+          _submitTransfer(context, accountProvider, transferProvider),
+      style: ElevatedButton.styleFrom(
+        minimumSize: Size(double.infinity, 50),
+      ),
+    );
+  }
+
+  void _submitTransfer(BuildContext context, AccountProvider accountProvider,
+      TransferProvider transferProvider) {
+    if (_formKey.currentState!.validate()) {
+      transferProvider
+          .addTransfer(
+        TransferModel(
+          id: '',
+          sourceAccountId: fromAccount!,
+          destinationAccountId: toAccount!,
+          amount: double.parse(amountController.text),
+          date: selectedDate,
+          comment: commentController.text,
+          type: 'transfer',
+        ),
+        accountProvider,
+      )
+          .then((_) {
+        Navigator.pop(context);
+      }).catchError((error, stackTrace) {
+        _showErrorSnackBar(context, error);
+        throw AsyncError(error, stackTrace);
+      });
+    }
+  }
+
+  void _showErrorSnackBar(BuildContext context, dynamic error) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red,
+        content: Text(
+          error is StateError
+              ? error.message
+              : 'An error occurred while processing the transfer',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
     );
   }
 }

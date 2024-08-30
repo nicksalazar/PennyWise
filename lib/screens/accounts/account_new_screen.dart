@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:pennywise/models/account_model.dart';
 import 'package:pennywise/providers/account_provider.dart';
 import 'package:pennywise/providers/category_provider.dart';
+import 'package:pennywise/themes/app_theme.dart';
 import 'package:pennywise/utils/icon_utils.dart';
 import 'package:pennywise/widgets/color_selector_widget.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +20,7 @@ class AddAccountScreen extends StatefulWidget {
 
 class _AddAccountScreenState extends State<AddAccountScreen> {
   String selectedIcon = '';
-  Color selectedColor = Colors.yellow;
+  Color selectedColor = AppTheme.folly;
   String selectedCurrency = 'PEN';
   bool includeInTotal = true;
   TextEditingController accountNameController = TextEditingController();
@@ -27,53 +28,47 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final List<Color> colors = [
-    Colors.yellow,
-    Colors.green.shade200,
-    Colors.green,
-    Colors.pink,
-    Colors.blue,
-    Colors.red,
-    Colors.cyan,
+    AppTheme.folly,
+    AppTheme.accentBlue,
+    AppTheme.successGreen,
+    AppTheme.warningYellow,
+    Colors.purple,
+    Colors.orange,
+    Colors.teal,
   ];
 
   @override
   void initState() {
     super.initState();
-    //get mains providers
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       Provider.of<AccountProvider>(context, listen: false).fetchAccounts();
-      //categories
       Provider.of<CategoryProvider>(context, listen: false);
+      if (widget.accountId != null) {
+        _loadAccountData();
+      }
     });
-    if (widget.accountId != null) {
-      final account = Provider.of<AccountProvider>(context, listen: false)
-          .getAccountById(widget.accountId!);
+  }
+
+  void _loadAccountData() {
+    final account = Provider.of<AccountProvider>(context, listen: false)
+        .getAccountById(widget.accountId!);
+    setState(() {
       accountNameController.text = account.name;
       balanceController.text = account.balance.toString();
       selectedIcon = account.icon;
       selectedColor = Color(int.parse(account.color.replaceFirst('#', '0xFF')));
-
-      // Assuming the currency is stored in the account model, update this line accordingly
-      selectedCurrency =
-          'PEN'; // Update this line if currency is stored in the account model
-      includeInTotal =
-          true; // Update this line if includeInTotal is stored in the account model
-    }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final categories = categorizedIcons.entries
-        .map((e) => e.value)
-        .expand((element) => element)
-        .toList();
-
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.accountId == null ? 'Add account' : 'Edit account'),
+        title: Text(widget.accountId == null ? 'Add Account' : 'Edit Account'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
+          tooltip: 'Back',
         ),
       ),
       body: SingleChildScrollView(
@@ -83,212 +78,21 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildBalanceField(),
               SizedBox(height: 20),
-              TextFormField(
-                controller: balanceController,
-                decoration: InputDecoration(
-                  labelText: 'Initial Balance',
-                  suffixText: selectedCurrency,
-                ),
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
-              ),
+              _buildAccountNameField(),
               SizedBox(height: 20),
-              TextFormField(
-                controller: accountNameController,
-                decoration: InputDecoration(
-                  labelText: 'Account name',
-                  hintText: 'Enter account name',
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter some text';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 20),
-              GridView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 4,
-                  childAspectRatio: 1,
-                ),
-                itemCount: (categories.length * 0.08).ceil() + 1,
-                itemBuilder: (context, index) {
-                  if (index == (categories.length * 0.08).ceil()) {
-                    return InkWell(
-                      onTap: () async {
-                        final result = await context.push(
-                          '/categories/icon_catalog',
-                        );
-                        print("here is result $result");
-                        if (result != null && result is String) {
-                          setState(() {
-                            selectedIcon = result;
-                          });
-                        }
-                      },
-                      child: Icon(
-                        Icons.more_horiz,
-                        size: 40,
-                      ),
-                    );
-                  }
-
-                  final iconName = categories[index];
-                  final iconData = getIconDataByName(iconName);
-                  return InkWell(
-                    onTap: () {
-                      setState(() {
-                        selectedIcon = iconName;
-                      });
-                    },
-                    child: CircleAvatar(
-                      backgroundColor: selectedIcon == iconName
-                          ? selectedColor
-                          : Colors.grey[300],
-                      child: Icon(
-                        iconData,
-                        color: selectedIcon == iconName
-                            ? Colors.white
-                            : Colors.black,
-                        size: 30,
-                      ),
-                    ),
-                  );
-                },
-              ),
+              _buildIconSelector(),
               SizedBox(height: 16),
-              Text('Color', style: TextStyle(fontSize: 16)),
-              SizedBox(height: 10),
-              Row(
-                children: colors.map((color) {
-                  return GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        selectedColor = color;
-                      });
-                    },
-                    child: Container(
-                      margin: EdgeInsets.only(right: 10),
-                      width: 30,
-                      height: 30,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: selectedColor.value == color.value
-                              ? Colors.black
-                              : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList()
-                  ..add(
-                    GestureDetector(
-                      onTap: () {
-                        //ColorSelector
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ColorSelector(
-                              onColorSelected: (color) {
-                                setState(() {
-                                  selectedColor = color;
-                                });
-                              },
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.grey),
-                        ),
-                        child: Icon(Icons.add, size: 20),
-                      ),
-                    ),
-                  ),
-              ),
+              _buildColorSelector(),
               SizedBox(height: 20),
-              Text('Select currency', style: TextStyle(fontSize: 16)),
-              DropdownButton<String>(
-                value: selectedCurrency,
-                onChanged: (String? newValue) {
-                  setState(() {
-                    selectedCurrency = newValue!;
-                  });
-                },
-                items: <String>['PEN', 'USD', 'EUR', 'GBP']
-                    .map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-              ),
+              _buildCurrencySelector(),
               SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Do not include in total balance',
-                      style: TextStyle(fontSize: 16)),
-                  Switch(
-                    value: !includeInTotal,
-                    onChanged: (value) {
-                      setState(() {
-                        includeInTotal = !value;
-                      });
-                    },
-                    activeColor: Colors.green,
-                  ),
-                ],
-              ),
+              _buildIncludeInTotalSwitch(),
               SizedBox(height: 40),
-              if (widget.accountId != null) // Check if editing
-                ElevatedButton(
-                  child: Text('Delete'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    textStyle: TextStyle(
-                      color: Colors.white,
-                    ),
-                  ),
-                  onPressed: () {
-                    // Handle delete account logic
-                    Provider.of<AccountProvider>(context, listen: false)
-                        .deleteAccount(widget.accountId!);
-                    Navigator.pop(context);
-                  },
-                ),
+              if (widget.accountId != null) _buildDeleteButton(),
               SizedBox(height: 20),
-              Center(
-                child: ElevatedButton(
-                  child: Text('Add'),
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      // El formulario es válido
-                      // Realizar la acción deseada
-                      _submitForm(widget.accountId != null);
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
-                  ),
-                ),
-              ),
+              _buildSubmitButton(),
             ],
           ),
         ),
@@ -296,43 +100,289 @@ class _AddAccountScreenState extends State<AddAccountScreen> {
     );
   }
 
+  Widget _buildBalanceField() {
+    return TextFormField(
+      controller: balanceController,
+      decoration: InputDecoration(
+        labelText: 'Initial Balance',
+        suffixText: selectedCurrency,
+        prefixIcon: Icon(Icons.account_balance_wallet),
+      ),
+      keyboardType: TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}'))
+      ],
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter the initial balance';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildAccountNameField() {
+    return TextFormField(
+      controller: accountNameController,
+      decoration: InputDecoration(
+        labelText: 'Account Name',
+        hintText: 'Enter account name',
+        prefixIcon: Icon(Icons.account_circle),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please enter an account name';
+        }
+        return null;
+      },
+    );
+  }
+
+  Widget _buildIconSelector() {
+    final categories = categorizedIcons.entries
+        .map((e) => e.value)
+        .expand((element) => element)
+        .toList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Select Icon', style: Theme.of(context).textTheme.titleLarge),
+        SizedBox(height: 10),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 6,
+            childAspectRatio: 1,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: (categories.length * 0.08).ceil() + 1,
+          itemBuilder: (context, index) {
+            if (index == (categories.length * 0.08).ceil()) {
+              return _buildMoreIconsButton();
+            }
+            return _buildIconItem(categories[index]);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIconItem(String iconName) {
+    final iconData = getIconDataByName(iconName);
+    return Tooltip(
+      message: iconName,
+      child: InkWell(
+        onTap: () => setState(() => selectedIcon = iconName),
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: selectedIcon == iconName ? selectedColor : Colors.grey[300],
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
+            iconData,
+            color: selectedIcon == iconName ? Colors.white : Colors.black,
+            size: 30,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMoreIconsButton() {
+    return InkWell(
+      onTap: () async {
+        final result = await context.push('/categories/icon_catalog');
+        if (result != null && result is String) {
+          setState(() => selectedIcon = result);
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.grey),
+          shape: BoxShape.circle,
+        ),
+        child: Icon(Icons.more_horiz, size: 30),
+      ),
+    );
+  }
+
+  Widget _buildColorSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Select Color', style: Theme.of(context).textTheme.titleLarge),
+        SizedBox(height: 10),
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: colors.map((color) => _buildColorItem(color)).toList()
+            ..add(_buildCustomColorButton()),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildColorItem(Color color) {
+    return GestureDetector(
+      onTap: () => setState(() => selectedColor = color),
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 200),
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: selectedColor.value == color.value
+                ? Colors.black
+                : Colors.transparent,
+            width: 2,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomColorButton() {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ColorSelector(
+              onColorSelected: (color) => setState(() => selectedColor = color),
+            ),
+          ),
+        );
+      },
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.grey),
+        ),
+        child: Icon(Icons.add, size: 20),
+      ),
+    );
+  }
+
+  Widget _buildCurrencySelector() {
+    return DropdownButtonFormField<String>(
+      value: selectedCurrency,
+      decoration: InputDecoration(
+        labelText: 'Select Currency',
+        prefixIcon: Icon(Icons.monetization_on),
+      ),
+      onChanged: (String? newValue) {
+        setState(() => selectedCurrency = newValue!);
+      },
+      items: <String>['PEN', 'USD', 'EUR', 'GBP']
+          .map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildIncludeInTotalSwitch() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text('Include in Total Balance', style: TextStyle(fontSize: 16)),
+        Switch(
+          value: includeInTotal,
+          onChanged: (value) => setState(() => includeInTotal = value),
+          activeColor: AppTheme.folly,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDeleteButton() {
+    return ElevatedButton.icon(
+      icon: Icon(Icons.delete),
+      label: Text('Delete Account'),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.red,
+        foregroundColor: Colors.white,
+      ),
+      onPressed: () => _showDeleteConfirmationDialog(),
+    );
+  }
+
+  void _showDeleteConfirmationDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Delete Account'),
+          content: Text('Are you sure you want to delete this account?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                Provider.of<AccountProvider>(context, listen: false)
+                    .deleteAccount(widget.accountId!);
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildSubmitButton() {
+    return ElevatedButton(
+      child: Text(widget.accountId == null ? 'Add Account' : 'Update Account'),
+      onPressed: () {
+        if (_formKey.currentState!.validate()) {
+          _submitForm(widget.accountId != null);
+        }
+      },
+      style: ElevatedButton.styleFrom(
+        minimumSize: Size(double.infinity, 50),
+      ),
+    );
+  }
+
   Future<void> _submitForm(bool isEdit) async {
     try {
-      if (selectedColor != null && selectedIcon != null) {
-        String hexColor =
-            '#${selectedColor!.value.toRadixString(16).substring(2)}';
+      String hexColor =
+          '#${selectedColor.value.toRadixString(16).substring(2)}';
+      Account account = Account(
+        id: widget.accountId ?? "",
+        name: accountNameController.text,
+        icon: selectedIcon,
+        balance: double.parse(balanceController.text),
+        color: hexColor,
+      );
 
-        if (isEdit) {
-          await Provider.of<AccountProvider>(context, listen: false)
-              .editAccount(
-            Account(
-              id: widget.accountId!,
-              name: accountNameController.text,
-              icon: selectedIcon,
-              balance: double.parse(balanceController.text),
-              color: hexColor,
-            ),
-          );
-          Navigator.pop(context);
-        } else {
-          await Provider.of<AccountProvider>(context, listen: false).addAccount(
-            Account(
-              id: "",
-              name: accountNameController.text,
-              icon: selectedIcon,
-              balance: double.parse(balanceController.text),
-              color: hexColor,
-            ),
-          );
-
-          Navigator.pop(context);
-        }
+      if (isEdit) {
+        await Provider.of<AccountProvider>(context, listen: false)
+            .editAccount(account);
+      } else {
+        await Provider.of<AccountProvider>(context, listen: false)
+            .addAccount(account);
       }
+
+      Navigator.pop(context);
     } catch (e) {
-      //snack dialog red
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error adding account: $e'),
+          content: Text('Error ${isEdit ? 'updating' : 'adding'} account: $e'),
           backgroundColor: Colors.red,
         ),
       );

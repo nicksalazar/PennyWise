@@ -93,7 +93,6 @@ class _LoginScreenState extends State<LoginScreen>
                       style:
                           Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).primaryColor,
                               ),
                       textAlign: TextAlign.center,
                     ),
@@ -102,7 +101,6 @@ class _LoginScreenState extends State<LoginScreen>
                       controller: _emailController,
                       decoration: InputDecoration(
                         labelText: l10n.loginEmailLabel,
-                       
                         prefixIcon: Icon(Icons.email_outlined),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),

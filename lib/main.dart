@@ -245,34 +245,33 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return Consumer<LanguageProvider>(
-      builder: (context, languageProvider, child) {
-        return MaterialApp.router(
-          localizationsDelegates: [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: [
-            Locale('en', ''),
-            Locale('es', ''),
-          ],
-          locale: languageProvider.currentLocale,
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.lightTheme,
-          darkTheme: AppTheme.darkTheme,
-          themeMode: ThemeMode.system,
-          routerConfig: _router,
-          builder: (context, child) {
-            return Stack(
-              children: [
-                child!,
-                LoadingIndicator(),
-              ],
-            );
-          },
-        );
-      }
-    );
+        builder: (context, languageProvider, child) {
+      return MaterialApp.router(
+        localizationsDelegates: [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: [
+          Locale('en', ''),
+          Locale('es', ''),
+        ],
+        locale: languageProvider.currentLocale,
+        debugShowCheckedModeBanner: false,
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.system,
+        routerConfig: _router,
+        builder: (context, child) {
+          return Stack(
+            children: [
+              child!,
+              LoadingIndicator(),
+            ],
+          );
+        },
+      );
+    });
   }
 }

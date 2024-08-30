@@ -29,7 +29,6 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     WidgetsBinding.instance!.addPostFrameCallback((_) {
       Provider.of<AccountProvider>(context, listen: false).fetchAccounts();
@@ -39,15 +38,17 @@ class _TransactionScreenState extends State<TransactionScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final accountProvider = Provider.of<AccountProvider>(context);
     final categoryProvider = Provider.of<CategoryProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Transaction'),
+        title: Text('Add Transaction', style: theme.textTheme.titleLarge),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.of(context).pop(),
+          tooltip: 'Back',
         ),
       ),
       body: Form(
@@ -57,21 +58,19 @@ class _TransactionScreenState extends State<TransactionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildToggleButtons(),
-              SizedBox(height: 20),
-              _buildAmountInput(),
-              SizedBox(height: 20),
-              _buildAccountDropdown(accountProvider),
-              SizedBox(height: 20),
-              _buildCategoryGrid(categoryProvider),
-              SizedBox(height: 20),
-              _buildDateSelection(),
-              SizedBox(height: 20),
-              // _buildTagsSection(),
-              // SizedBox(height: 20),
-              _buildCommentSection(),
-              SizedBox(height: 20),
-              _buildAddButton(),
+              _buildToggleButtons(theme),
+              SizedBox(height: 24),
+              _buildAmountInput(theme),
+              SizedBox(height: 24),
+              _buildAccountDropdown(accountProvider, theme),
+              SizedBox(height: 24),
+              _buildCategorySection(categoryProvider, theme),
+              SizedBox(height: 24),
+              _buildDateSelection(theme),
+              SizedBox(height: 24),
+              _buildCommentSection(theme),
+              SizedBox(height: 24),
+              _buildAddButton(theme),
             ],
           ),
         ),
@@ -79,53 +78,28 @@ class _TransactionScreenState extends State<TransactionScreen> {
     );
   }
 
-  Widget _buildToggleButtons() {
+  Widget _buildToggleButtons(ThemeData theme) {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),
+        color: theme.colorScheme.surface,
       ),
       child: Row(
         children: [
           Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => isExpense = true),
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: !isExpense ? Colors.white : Colors.green,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Center(
-                  child: Text(
-                    'EXPENSES',
-                    style: TextStyle(
-                      color: !isExpense ? Colors.green : Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+            child: _buildToggleButton(
+              'EXPENSES',
+              isExpense,
+              () => setState(() => isExpense = true),
+              theme,
             ),
           ),
           Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => isExpense = false),
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: 10),
-                decoration: BoxDecoration(
-                  color: isExpense ? Colors.white : Colors.green,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: Center(
-                  child: Text(
-                    'INCOME',
-                    style: TextStyle(
-                      color: isExpense ? Colors.green : Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
+            child: _buildToggleButton(
+              'INCOME',
+              !isExpense,
+              () => setState(() => isExpense = false),
+              theme,
             ),
           ),
         ],
@@ -133,17 +107,46 @@ class _TransactionScreenState extends State<TransactionScreen> {
     );
   }
 
-  Widget _buildAmountInput() {
+  Widget _buildToggleButton(
+      String label, bool isSelected, VoidCallback onTap, ThemeData theme) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? theme.colorScheme.primary
+              : theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: theme.textTheme.bodyLarge!.copyWith(
+              color: isSelected
+                  ? theme.colorScheme.onPrimary
+                  : theme.colorScheme.onSurface,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAmountInput(ThemeData theme) {
     return Row(
       children: [
         Expanded(
           child: TextFormField(
             controller: amountController,
             keyboardType: TextInputType.number,
-            style: TextStyle(fontSize: 24),
+            style: theme.textTheme.headlineMedium,
             decoration: InputDecoration(
               hintText: '0',
               border: InputBorder.none,
+              prefixIcon:
+                  Icon(Icons.monetization_on, color: theme.colorScheme.primary),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
@@ -153,35 +156,41 @@ class _TransactionScreenState extends State<TransactionScreen> {
             },
           ),
         ),
-        Text('PEN', style: TextStyle(fontSize: 24, color: Colors.green)),
+        Text('PEN',
+            style: theme.textTheme.titleLarge!
+                .copyWith(color: theme.colorScheme.primary)),
         IconButton(
-          icon: Icon(Icons.calculate, color: Colors.green),
+          icon: Icon(Icons.calculate, color: theme.colorScheme.primary),
           onPressed: () {
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => CalculatorScreen()),
             );
           },
+          tooltip: 'Open Calculator',
         ),
       ],
     );
   }
 
-  Widget _buildAccountDropdown(AccountProvider accountProvider) {
-
+  Widget _buildAccountDropdown(
+      AccountProvider accountProvider, ThemeData theme) {
     final accounts = accountProvider.accounts
         .where((Account account) => account.id != 'total')
         .toList();
 
-    final cuentas = accounts.map((e) => e.name).toList();
     return DropdownButtonFormField<Account>(
       value: selectedAccount,
-      hint: Text('Select Account'),
-      items: accounts
-          .map((Account account) {
+      hint: Text('Select Account', style: theme.textTheme.bodyLarge),
+      decoration: InputDecoration(
+        prefixIcon:
+            Icon(Icons.account_balance, color: theme.colorScheme.primary),
+      ),
+      items: accounts.map((Account account) {
         return DropdownMenuItem<Account>(
           value: account,
-          child: Text("${account.name} - PEN S/. ${account.balance}"),
+          child: Text("${account.name} - PEN S/. ${account.balance}",
+              style: theme.textTheme.bodyMedium),
         );
       }).toList(),
       onChanged: (Account? newValue) {
@@ -198,73 +207,112 @@ class _TransactionScreenState extends State<TransactionScreen> {
     );
   }
 
-  Widget _buildCategoryGrid(CategoryProvider categoryProvider) {
+  Widget _buildCategorySection(
+      CategoryProvider categoryProvider, ThemeData theme) {
     List<Category> categories = categoryProvider.categories
         .where(
             (category) => category.type == (isExpense ? 'expense' : 'income'))
         .toList();
-    print("categories ${categories.length}");
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Categories', style: TextStyle(color: Colors.grey)),
-        SizedBox(height: 10),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            childAspectRatio: 1,
+        Text('Categories', style: theme.textTheme.titleMedium),
+        SizedBox(height: 12),
+        Container(
+          height: 100, // Altura fija para el contenedor de categorías
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: categories.length,
+            itemBuilder: (context, index) {
+              final category = categories[index];
+              final isSelected = selectedCategory == category;
+              return Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: _buildCategoryItem(category, isSelected, theme),
+              );
+            },
           ),
-          itemCount: categories.length,
-          itemBuilder: (context, index) {
-            final category = categories[index];
-            final isSelected = selectedCategory == category;
-            return GestureDetector(
-              onTap: () => setState(() => selectedCategory = category),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? const Color.fromARGB(255, 76, 175, 135)
-                          : Color(int.parse(
-                              category.color.replaceFirst('#', '0xff'))),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(getIconDataByName(category.icon),
-                        color: Colors.white),
-                  ),
-                  SizedBox(height: 5),
-                  Text(category.name, style: TextStyle(fontSize: 12)),
-                ],
-              ),
-            );
-          },
         ),
       ],
     );
   }
 
-  Widget _buildDateSelection() {
+  Widget _buildCategoryItem(
+      Category category, bool isSelected, ThemeData theme) {
+    return GestureDetector(
+      onTap: () => setState(() => selectedCategory = category),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? theme.colorScheme.primary
+                  : Color(int.parse(category.color.replaceFirst('#', '0xff'))),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color:
+                    isSelected ? theme.colorScheme.primary : Colors.transparent,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Icon(
+              getIconDataByName(category.icon),
+              color: isSelected ? theme.colorScheme.onPrimary : Colors.white,
+              size: 30,
+            ),
+          ),
+          SizedBox(height: 8),
+          Container(
+            width: 60,
+            child: Text(
+              category.name,
+              style: theme.textTheme.bodySmall!.copyWith(
+                color: isSelected
+                    ? theme.colorScheme.primary
+                    : theme.colorScheme.onSurface,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDateSelection(ThemeData theme) {
     final now = DateTime.now();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Date', style: TextStyle(color: Colors.grey)),
-        SizedBox(height: 10),
+        Text('Date', style: theme.textTheme.titleMedium),
+        SizedBox(height: 12),
         Row(
           children: [
-            _buildDateButton(now, 'Today'),
-            SizedBox(width: 10),
-            _buildDateButton(now.subtract(Duration(days: 1)), 'Yesterday'),
-            SizedBox(width: 10),
-            _buildDateButton(now.subtract(Duration(days: 2)), '2 days ago'),
-            SizedBox(width: 10),
+            _buildDateButton(now, 'Today', theme),
+            SizedBox(width: 8),
+            _buildDateButton(
+                now.subtract(Duration(days: 1)), 'Yesterday', theme),
+            SizedBox(width: 8),
+            _buildDateButton(
+                now.subtract(Duration(days: 2)), '2 days ago', theme),
+            SizedBox(width: 8),
             IconButton(
-              icon: Icon(Icons.calendar_today, color: Colors.green),
+              icon:
+                  Icon(Icons.calendar_today, color: theme.colorScheme.primary),
               onPressed: () async {
                 final DateTime? picked = await showDatePicker(
                   context: context,
@@ -278,6 +326,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
                   });
                 }
               },
+              tooltip: 'Select Date',
             ),
           ],
         ),
@@ -285,14 +334,23 @@ class _TransactionScreenState extends State<TransactionScreen> {
     );
   }
 
-  Widget _buildDateButton(DateTime date, String label) {
+  Widget _buildDateButton(DateTime date, String label, ThemeData theme) {
     final isSelected = DateUtils.isSameDay(date, selectedDate);
     return ElevatedButton(
-      child: Text('${date.day}/${date.month}\n$label'),
+      child: Text(
+        '${date.day}/${date.month}\n$label',
+        style: theme.textTheme.bodySmall!.copyWith(
+          color: isSelected
+              ? theme.colorScheme.onPrimary
+              : theme.colorScheme.primary,
+        ),
+        textAlign: TextAlign.center,
+      ),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isSelected ? Colors.green : Colors.white,
-        foregroundColor: isSelected ? Colors.white : Colors.black,
-        textStyle: TextStyle(fontSize: 12),
+        backgroundColor:
+            isSelected ? theme.colorScheme.primary : theme.colorScheme.surface,
+        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
       onPressed: () {
         setState(() {
@@ -302,51 +360,32 @@ class _TransactionScreenState extends State<TransactionScreen> {
     );
   }
 
-  Widget _buildTagsSection() {
-    return Row(
-      children: [
-        Text('Tags', style: TextStyle(color: Colors.grey)),
-        SizedBox(width: 10),
-        ElevatedButton.icon(
-          icon: Icon(Icons.add, color: Colors.green),
-          label: Text('Add tag', style: TextStyle(color: Colors.green)),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.white,
-            side: BorderSide(color: Colors.green),
-          ),
-          onPressed: () {
-            // TODO: Implement add tag functionality
-          },
-        ),
-        Spacer(),
-        Icon(Icons.search, color: Colors.green),
-      ],
-    );
-  }
-
-  Widget _buildCommentSection() {
+  Widget _buildCommentSection(ThemeData theme) {
     return TextFormField(
       controller: commentController,
       decoration: InputDecoration(
-        hintText: 'Comment',
-        border: UnderlineInputBorder(),
+        hintText: 'Add a comment',
+        prefixIcon: Icon(Icons.comment, color: theme.colorScheme.primary),
       ),
       maxLines: 3,
+      style: theme.textTheme.bodyMedium,
     );
   }
 
-  Widget _buildAddButton() {
+  Widget _buildAddButton(ThemeData theme) {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        child: Text('Add'),
+        child: Text('Add Transaction',
+            style: theme.textTheme.titleMedium!
+                .copyWith(color: theme.colorScheme.onPrimary)),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
-          padding: EdgeInsets.symmetric(vertical: 15),
+          backgroundColor: theme.colorScheme.primary,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         onPressed: () {
           if (_formKey.currentState!.validate() && selectedCategory != null) {
-            // TODO: Implement add transaction functionality
             Provider.of<TransactionProvider>(context, listen: false)
                 .addTransaction(
               TransactionModel(
@@ -362,7 +401,10 @@ class _TransactionScreenState extends State<TransactionScreen> {
             Navigator.of(context).pop();
           } else if (selectedCategory == null) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Please select a category')),
+              SnackBar(
+                content: Text('Please select a category'),
+                backgroundColor: theme.colorScheme.error,
+              ),
             );
           }
         },
