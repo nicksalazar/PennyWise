@@ -31,6 +31,15 @@ class LanguageSettingsScreen extends StatelessWidget {
               if (value != null) languageProvider.changeLanguage(value);
             },
           ),
+          //portuguese
+          RadioListTile<Locale>(
+            title: Text('Português'),
+            value: Locale('pt'),
+            groupValue: languageProvider.currentLocale,
+            onChanged: (Locale? value) {
+              if (value != null) languageProvider.changeLanguage(value);
+            },
+          ),
         ],
       ),
     );

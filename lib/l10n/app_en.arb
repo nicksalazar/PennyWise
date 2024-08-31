@@ -30,5 +30,54 @@
   "myDrawerCategories": "Categories",
   "myDrawerProfile": "Profile",
   "myDrawerSettings": "Settings",
-  "myDrawerLogout": "Logout"
+  "myDrawerLogout": "Logout",
+  "accountsTitle": "Accounts",
+  "totalBalance": "Total Balance",
+  "currencyAmount": "S/. {amount}",
+  "@currencyAmount": {
+    "description": "A currency amount",
+    "placeholders": {
+      "amount": {
+        "type": "double",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "transferHistory": "Transfer History",
+  "newTransfer": "New Transfer",
+  "noAccountsFound": "No accounts found",
+  "balance": "Balance",
+  "createTransferTitle": "Create Transfer",
+  "back": "Back",
+  "fromAccount": "From Account",
+  "toAccount": "To Account",
+  "transferAmount": "Transfer Amount",
+  "currencyCode": "PEN",
+  "transferDate": "Transfer Date",
+  "comment": "Comment",
+  "addTransfer": "Add Transfer",
+  "pleaseSelectAccount": "Please select an account",
+  "pleaseEnterAmount": "Please enter an amount",
+  "pleaseEnterValidNumber": "Please enter a valid number",
+  "transferErrorMessage": "An error occurred while processing the transfer",
+  "transferHistoryTitle": "Transfer History",
+  "dayTab": "Day",
+  "weekTab": "Week",
+  "monthTab": "Month",
+  "yearTab": "Year",
+  "periodTab": "Period",
+  "noTransfersFound": "No transfers found",
+  "newTransferButton": "New Transfer",
+  "depositTitle": "Deposit",
+  "depositSubtitle": "To {accountName}",
+  "adjustmentTitle": "Adjustment",
+  "adjustmentSubtitle": "On {accountName}",
+  "transferTitle": "Transfer",
+  "transferSubtitle": "{sourceAccount} -> {destinationAccount}",
+  "initialBalanceTitle": "Initial Balance",
+  "initialBalanceSubtitle": "For {accountName}",
+  "unknownTransferType": "Unknown"
 }

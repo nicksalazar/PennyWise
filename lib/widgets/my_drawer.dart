@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pennywise/providers/auth_provider.dart';
+import 'package:pennywise/screens/settings/language_settings_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-import '../screens/settings/language_settings_screen.dart';
 
 class MyDrawer extends StatefulWidget {
   @override
@@ -24,7 +23,6 @@ class _MyDrawerState extends State<MyDrawer> {
   Widget build(BuildContext context) {
     final currentRoute =
         GoRouter.of(context).routerDelegate.currentConfiguration.uri.path;
-    print("current route ${currentRoute}");
     final l10n = AppLocalizations.of(context)!;
     return Drawer(
       child: ListView(
@@ -41,7 +39,9 @@ class _MyDrawerState extends State<MyDrawer> {
                   children: [
                     CircleAvatar(
                       radius: 30,
-                      backgroundImage: AssetImage('assets/icon/app_icon.png'),
+                      backgroundImage: AssetImage(
+                        'assets/icon/app_icon.png',
+                      ),
                       child: Container(
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,

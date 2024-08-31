@@ -256,6 +256,7 @@ class _MyAppState extends State<MyApp> {
         supportedLocales: [
           Locale('en', ''),
           Locale('es', ''),
+          Locale('pt', ''),
         ],
         locale: languageProvider.currentLocale,
         debugShowCheckedModeBanner: false,

@@ -7,6 +7,7 @@ import 'package:pennywise/themes/app_theme.dart';
 import 'package:provider/provider.dart';
 import 'package:pennywise/providers/transfer_provider.dart';
 import 'package:pennywise/models/transfer_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TransferHistoryScreen extends StatefulWidget {
   @override
@@ -16,12 +17,12 @@ class TransferHistoryScreen extends StatefulWidget {
 class _TransferHistoryScreenState extends State<TransferHistoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final List<String> _tabs = ['Day', 'Week', 'Month', 'Year', 'Period'];
+  late List<String> _tabs;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: _tabs.length, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _tabController.addListener(_handleTabSelection);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -117,6 +118,15 @@ class _TransferHistoryScreenState extends State<TransferHistoryScreen>
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDarkMode ? Colors.white : AppTheme.raisinBlack;
     final cardColor = isDarkMode ? Color(0xFF2C2C2C) : Colors.white;
+    final l10n = AppLocalizations.of(context)!;
+
+    _tabs = [
+      l10n.dayTab,
+      l10n.weekTab,
+      l10n.monthTab,
+      l10n.yearTab,
+      l10n.periodTab,
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -124,7 +134,7 @@ class _TransferHistoryScreenState extends State<TransferHistoryScreen>
           icon: Icon(Icons.close, color: textColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: Text('Transfer History', style: TextStyle(color: textColor)),
+        title: Text(l10n.transferHistoryTitle, style: TextStyle(color: textColor)),
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         elevation: 0,
         bottom: TabBar(
@@ -146,7 +156,7 @@ class _TransferHistoryScreenState extends State<TransferHistoryScreen>
                       if (transferProvider.transfers.isEmpty) {
                         return Center(
                           child: Text(
-                            'No transfers found',
+                            l10n.noTransfersFound,
                             style: TextStyle(color: textColor, fontSize: 18),
                           ),
                         );
@@ -167,7 +177,7 @@ class _TransferHistoryScreenState extends State<TransferHistoryScreen>
                               Padding(
                                 padding: const EdgeInsets.all(16.0),
                                 child: Text(
-                                  DateFormat('MMMM d, y').format(date),
+                                  DateFormat('MMMM d, y', Localizations.localeOf(context).languageCode).format(date),
                                   style: TextStyle(
                                     color: textColor,
                                     fontSize: 18,
@@ -177,7 +187,7 @@ class _TransferHistoryScreenState extends State<TransferHistoryScreen>
                               ),
                               ...dateTransfers.map((transfer) =>
                                   _buildTransferTile(transfer, accounts,
-                                      isDarkMode, cardColor, textColor)),
+                                      isDarkMode, cardColor, textColor, l10n)),
                             ],
                           );
                         },
@@ -193,7 +203,7 @@ class _TransferHistoryScreenState extends State<TransferHistoryScreen>
                 onPressed: () {
                   context.go('/accounts/new_transfer');
                 },
-                child: Text('New Transfer'),
+                child: Text(l10n.newTransferButton),
                 style: ElevatedButton.styleFrom(
                   minimumSize: Size(double.infinity, 50),
                   backgroundColor: AppTheme.folly,
@@ -211,7 +221,7 @@ class _TransferHistoryScreenState extends State<TransferHistoryScreen>
   }
 
   Widget _buildTransferTile(TransferModel transfer, List<Account> accounts,
-      bool isDarkMode, Color cardColor, Color textColor) {
+      bool isDarkMode, Color cardColor, Color textColor, AppLocalizations l10n) {
     final sourceAccount = accounts.firstWhere(
       (account) => account.id == transfer.sourceAccountId,
       orElse: () => Account(id: "", name: "", icon: "", balance: 0, color: ""),
@@ -222,28 +232,28 @@ class _TransferHistoryScreenState extends State<TransferHistoryScreen>
       orElse: () => Account(id: "", name: "", icon: "", balance: 0, color: ""),
     );
 
-    String title = '';
-    String subtitle = '';
+    String title;
+    String subtitle;
 
     switch (transfer.type) {
       case "deposit":
-        title = 'Deposit';
-        subtitle = 'To ${destinationAccount.name}';
+        title = l10n.depositTitle;
+        subtitle = l10n.depositSubtitle(destinationAccount.name);
         break;
       case "adjustment":
-        title = 'Adjustment';
-        subtitle = 'On ${sourceAccount.name}';
+        title = l10n.adjustmentTitle;
+        subtitle = l10n.adjustmentSubtitle(sourceAccount.name);
         break;
       case "transfer":
-        title = 'Transfer';
-        subtitle = '${sourceAccount.name} -> ${destinationAccount.name}';
+        title = l10n.transferTitle;
+        subtitle = l10n.transferSubtitle(sourceAccount.name, destinationAccount.name);
         break;
       case "initial":
-        title = 'Initial Balance';
-        subtitle = 'For ${destinationAccount.name}';
+        title = l10n.initialBalanceTitle;
+        subtitle = l10n.initialBalanceSubtitle(destinationAccount.name);
         break;
       default:
-        title = 'Unknown';
+        title = l10n.unknownTransferType;
         subtitle = '';
     }
 
@@ -269,7 +279,11 @@ class _TransferHistoryScreenState extends State<TransferHistoryScreen>
           ),
         ),
         trailing: Text(
-          '\$${transfer.amount.toStringAsFixed(2)}',
+          NumberFormat.currency(
+            symbol: '\$',
+            decimalDigits: 2,
+            locale: Localizations.localeOf(context).toString(),
+          ).format(transfer.amount),
           style: TextStyle(
             color: transfer.amount > 0 ? AppTheme.successGreen : AppTheme.folly,
             fontWeight: FontWeight.bold,

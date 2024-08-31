@@ -6,6 +6,7 @@ import 'package:pennywise/providers/account_provider.dart';
 import 'package:pennywise/providers/transfer_provider.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CreateTransferScreen extends StatefulWidget {
   @override
@@ -22,13 +23,14 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Create Transfer'),
+        title: Text(l10n.createTransferTitle),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
-          tooltip: 'Back',
+          tooltip: l10n.back,
         ),
       ),
       body: Consumer2<AccountProvider, TransferProvider>(
@@ -45,7 +47,7 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
                 children: [
                   _buildAccountSelector(
                     accounts,
-                    'From Account',
+                    l10n.fromAccount,
                     fromAccount,
                     (newValue) => setState(() {
                       fromAccount = newValue;
@@ -56,7 +58,7 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
                   SizedBox(height: 16),
                   _buildAccountSelector(
                     accounts,
-                    'To Account',
+                    l10n.toAccount,
                     toAccount,
                     (newValue) => setState(() {
                       toAccount = newValue;
@@ -65,14 +67,14 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
                     Icons.account_balance_wallet,
                   ),
                   SizedBox(height: 16),
-                  _buildAmountField(),
+                  _buildAmountField(l10n),
                   SizedBox(height: 16),
-                  _buildDatePicker(),
+                  _buildDatePicker(l10n),
                   SizedBox(height: 16),
-                  _buildCommentField(),
+                  _buildCommentField(l10n),
                   SizedBox(height: 24),
                   _buildSubmitButton(
-                      context, accountProvider, transferProvider),
+                      context, accountProvider, transferProvider, l10n),
                 ],
               ),
             ),
@@ -84,6 +86,7 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
 
   Widget _buildAccountSelector(List<dynamic> accounts, String label,
       String? value, Function(String?) onChanged, IconData icon) {
+    final l10n = AppLocalizations.of(context)!;
     return DropdownButtonFormField<String>(
       decoration: InputDecoration(
         labelText: label,
@@ -98,17 +101,17 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
           child: Text(account.name),
         );
       }).toList(),
-      validator: (value) => value == null ? 'Please select an account' : null,
+      validator: (value) => value == null ? l10n.pleaseSelectAccount : null,
     );
   }
 
-  Widget _buildAmountField() {
+  Widget _buildAmountField(AppLocalizations l10n) {
     return TextFormField(
       controller: amountController,
       decoration: InputDecoration(
-        labelText: 'Transfer Amount',
+        labelText: l10n.transferAmount,
         prefixIcon: Icon(Icons.attach_money),
-        suffixText: 'PEN',
+        suffixText: l10n.currencyCode,
         border: OutlineInputBorder(),
       ),
       keyboardType: TextInputType.numberWithOptions(decimal: true),
@@ -117,22 +120,22 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
       ],
       validator: (value) {
         if (value == null || value.isEmpty) {
-          return 'Please enter an amount';
+          return l10n.pleaseEnterAmount;
         }
         if (double.tryParse(value) == null) {
-          return 'Please enter a valid number';
+          return l10n.pleaseEnterValidNumber;
         }
         return null;
       },
     );
   }
 
-  Widget _buildDatePicker() {
+  Widget _buildDatePicker(AppLocalizations l10n) {
     return InkWell(
       onTap: () => _selectDate(context),
       child: InputDecorator(
         decoration: InputDecoration(
-          labelText: 'Transfer Date',
+          labelText: l10n.transferDate,
           prefixIcon: Icon(Icons.calendar_today),
           border: OutlineInputBorder(),
         ),
@@ -161,11 +164,11 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
     }
   }
 
-  Widget _buildCommentField() {
+  Widget _buildCommentField(AppLocalizations l10n) {
     return TextFormField(
       controller: commentController,
       decoration: InputDecoration(
-        labelText: 'Comment',
+        labelText: l10n.comment,
         prefixIcon: Icon(Icons.comment),
         border: OutlineInputBorder(),
       ),
@@ -173,10 +176,13 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
     );
   }
 
-  Widget _buildSubmitButton(BuildContext context,
-      AccountProvider accountProvider, TransferProvider transferProvider) {
+  Widget _buildSubmitButton(
+      BuildContext context,
+      AccountProvider accountProvider,
+      TransferProvider transferProvider,
+      AppLocalizations l10n) {
     return ElevatedButton(
-      child: Text('Add Transfer'),
+      child: Text(l10n.addTransfer),
       onPressed: () =>
           _submitTransfer(context, accountProvider, transferProvider),
       style: ElevatedButton.styleFrom(
@@ -187,6 +193,7 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
 
   void _submitTransfer(BuildContext context, AccountProvider accountProvider,
       TransferProvider transferProvider) {
+    final l10n = AppLocalizations.of(context)!;
     if (_formKey.currentState!.validate()) {
       transferProvider
           .addTransfer(
@@ -204,20 +211,19 @@ class _CreateTransferScreenState extends State<CreateTransferScreen> {
           .then((_) {
         Navigator.pop(context);
       }).catchError((error, stackTrace) {
-        _showErrorSnackBar(context, error);
+        _showErrorSnackBar(context, error, l10n);
         throw AsyncError(error, stackTrace);
       });
     }
   }
 
-  void _showErrorSnackBar(BuildContext context, dynamic error) {
+  void _showErrorSnackBar(
+      BuildContext context, dynamic error, AppLocalizations l10n) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: Colors.red,
         content: Text(
-          error is StateError
-              ? error.message
-              : 'An error occurred while processing the transfer',
+          error is StateError ? error.message : l10n.transferErrorMessage,
           style: TextStyle(color: Colors.white),
         ),
       ),

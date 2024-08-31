@@ -30,5 +30,54 @@
   "myDrawerCategories": "Categorías",
   "myDrawerProfile": "Perfil",
   "myDrawerSettings": "Ajustes",
-  "myDrawerLogout": "Cerrar sesión"
+  "myDrawerLogout": "Cerrar sesión",
+  "accountsTitle": "Cuentas",
+  "totalBalance": "Balance Total",
+  "currencyAmount": "S/. {amount}",
+  "@currencyAmount": {
+    "description": "Un monto en moneda",
+    "placeholders": {
+      "amount": {
+        "type": "double",
+        "format": "decimalPattern",
+        "optionalParameters": {
+          "decimalDigits": 2
+        }
+      }
+    }
+  },
+  "transferHistory": "Historial de Transferencias",
+  "newTransfer": "Nueva Transferencia",
+  "noAccountsFound": "No se encontraron cuentas",
+  "balance": "Saldo",
+  "createTransferTitle": "Crear Transferencia",
+  "back": "Volver",
+  "fromAccount": "Cuenta de Origen",
+  "toAccount": "Cuenta de Destino",
+  "transferAmount": "Monto de Transferencia",
+  "currencyCode": "PEN",
+  "transferDate": "Fecha de Transferencia",
+  "comment": "Comentario",
+  "addTransfer": "Agregar Transferencia",
+  "pleaseSelectAccount": "Por favor, seleccione una cuenta",
+  "pleaseEnterAmount": "Por favor, ingrese un monto",
+  "pleaseEnterValidNumber": "Por favor, ingrese un número válido",
+  "transferErrorMessage": "Ocurrió un error al procesar la transferencia",
+  "transferHistoryTitle": "Historial de Transferencias",
+  "dayTab": "Día",
+  "weekTab": "Semana",
+  "monthTab": "Mes",
+  "yearTab": "Año",
+  "periodTab": "Periodo",
+  "noTransfersFound": "No se encontraron transferencias",
+  "newTransferButton": "Nueva Transferencia",
+  "depositTitle": "Depósito",
+  "depositSubtitle": "A {accountName}",
+  "adjustmentTitle": "Ajuste",
+  "adjustmentSubtitle": "En {accountName}",
+  "transferTitle": "Transferencia",
+  "transferSubtitle": "{sourceAccount} -> {destinationAccount}",
+  "initialBalanceTitle": "Saldo Inicial",
+  "initialBalanceSubtitle": "Para {accountName}",
+  "unknownTransferType": "Desconocido"
 }
