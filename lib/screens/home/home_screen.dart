@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:pennywise/models/category_model.dart';
 import 'package:pennywise/providers/account_provider.dart';
 import 'package:pennywise/providers/category_provider.dart';
@@ -10,7 +11,6 @@ import 'package:pennywise/utils/icon_utils.dart';
 import 'package:pennywise/widgets/account_selection_dialog.dart';
 import 'package:pennywise/widgets/my_drawer.dart';
 import 'package:provider/provider.dart';
-import 'package:pennywise/utils/icon_utils.dart';
 
 class HomeScreen extends StatelessWidget {
   @override
@@ -27,17 +27,12 @@ class ExpenseTrackerHome extends StatefulWidget {
 class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  String _selectedPeriod = 'Week';
+  int _selectedPeriodIndex = 1; // 1 corresponde a 'week'
   bool _isScrolled = false;
   ScrollController _scrollController = ScrollController();
 
-  final List<String> _periodOptions = [
-    'Day',
-    'Week',
-    'Month',
-    'Year',
-    'Period'
-  ];
+  late List<String> _periodOptions;
+  late List<String> _periodValues;
 
   @override
   void initState() {
@@ -52,6 +47,19 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
     _scrollController.addListener(_onScroll);
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _periodOptions = [
+      AppLocalizations.of(context)!.day,
+      AppLocalizations.of(context)!.week,
+      AppLocalizations.of(context)!.month,
+      AppLocalizations.of(context)!.year,
+      AppLocalizations.of(context)!.period,
+    ];
+    _periodValues = ['day', 'week', 'month', 'year', 'period'];
+  }
+
   void _onScroll() {
     setState(() {
       _isScrolled = _scrollController.offset > 50;
@@ -62,7 +70,6 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
   Widget build(BuildContext context) {
     return Consumer2<AccountProvider, TransactionProvider>(
         builder: (context, accountProvider, transactionProvider, child) {
-          print("loading ${accountProvider.selectedAccountBalance}");
       return Scaffold(
         appBar: AppBar(
           leading: Builder(
@@ -110,8 +117,8 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
           bottom: TabBar(
             controller: _tabController,
             tabs: [
-              Tab(text: 'EXPENSES'),
-              Tab(text: 'INCOME'),
+              Tab(text: AppLocalizations.of(context)!.expenses),
+              Tab(text: AppLocalizations.of(context)!.income),
             ],
           ),
         ),
@@ -139,12 +146,11 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
         final categories = categoryProvider.categories;
         final allTransactions = transactionProvider.getFilteredTransactions(
           transactionType: transactionType,
-          period: _selectedPeriod,
+          period: _periodValues[_selectedPeriodIndex],
         );
         final transactions =
             accountProvider.getTransactionsForSelectedAccount(allTransactions);
 
-        // Group transactions by category and sum amounts
         Map<String, double> categoryTotals = {};
         for (var transaction in transactions) {
           categoryTotals[transaction.categoryId] =
@@ -157,7 +163,7 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
             (category) => category.id == entry.key,
             orElse: () => Category(
                 id: '',
-                name: 'Unknown',
+                name: AppLocalizations.of(context)!.unknown,
                 color: '#000000',
                 icon: 'help',
                 type: transactionType),
@@ -165,16 +171,15 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
           return ExpenseItem(
             category.id,
             category.name,
-            0, // We'll calculate this later
+            0,
             entry.value,
             Color(int.parse(category.color.replaceFirst('#', '0xff'))),
             getIconDataByName(category.icon),
           );
         }).toList();
 
-        // Calculate percentages
         double total = categoryItems.fold(0, (sum, item) => sum + item.amount);
-        categoryItems.forEach((item) {
+        categoryItems.map((item) {
           item.percentage = ((item.amount / total) * 100).round();
         });
 
@@ -191,16 +196,18 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: _periodOptions
-                          .map((period) => GestureDetector(
-                                onTap: () =>
-                                    setState(() => _selectedPeriod = period),
+                          .asMap()
+                          .entries
+                          .map((entry) => GestureDetector(
+                                onTap: () => setState(
+                                    () => _selectedPeriodIndex = entry.key),
                                 child: Text(
-                                  period,
+                                  entry.value,
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyMedium
                                       ?.copyWith(
-                                        color: _selectedPeriod == period
+                                        color: _selectedPeriodIndex == entry.key
                                             ? Theme.of(context)
                                                 .colorScheme
                                                 .secondary
@@ -247,16 +254,16 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
 
   String _getDateRangeText() {
     final now = DateTime.now();
-    switch (_selectedPeriod) {
-      case 'Day':
+    switch (_periodValues[_selectedPeriodIndex]) {
+      case 'day':
         return '${now.day} ${_getMonthName(now.month)}';
-      case 'Week':
+      case 'week':
         final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
         final endOfWeek = startOfWeek.add(Duration(days: 6));
         return '${startOfWeek.day} - ${endOfWeek.day} ${_getMonthName(endOfWeek.month)}';
-      case 'Month':
+      case 'month':
         return '${_getMonthName(now.month)} ${now.year}';
-      case 'Year':
+      case 'year':
         return '${now.year}';
       default:
         return '';
@@ -264,19 +271,19 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
   }
 
   String _getMonthName(int month) {
-    const monthNames = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec'
+    final monthNames = [
+      AppLocalizations.of(context)!.jan,
+      AppLocalizations.of(context)!.feb,
+      AppLocalizations.of(context)!.mar,
+      AppLocalizations.of(context)!.apr,
+      AppLocalizations.of(context)!.may,
+      AppLocalizations.of(context)!.jun,
+      AppLocalizations.of(context)!.jul,
+      AppLocalizations.of(context)!.aug,
+      AppLocalizations.of(context)!.sep,
+      AppLocalizations.of(context)!.oct,
+      AppLocalizations.of(context)!.nov,
+      AppLocalizations.of(context)!.dec
     ];
     return monthNames[month - 1];
   }
@@ -316,7 +323,7 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
       return SizedBox(
         height: 100,
         child: Center(
-          child: Text('No hay datos para mostrar'),
+          child: Text(AppLocalizations.of(context)!.noDataToDisplay),
         ),
       );
     }
@@ -358,7 +365,7 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
             builder: (context) => TransactionsByCategory(
               categoryId: item.id,
               categoryName: item.name,
-              transactionType: transactionType, // or 'income'
+              transactionType: transactionType,
             ),
           ),
         );
@@ -384,7 +391,6 @@ class _ExpenseTrackerHomeState extends State<ExpenseTrackerHome>
 }
 
 class ExpenseItem {
-  //id
   final String id;
   final String name;
   int percentage;

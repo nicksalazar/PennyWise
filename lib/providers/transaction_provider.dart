@@ -109,23 +109,24 @@ class TransactionProvider with ChangeNotifier {
     required String transactionType,
     required String period,
   }) {
+    print("period: $period");
     final now = DateTime.now();
     DateTime startDate;
     DateTime endDate = now;
 
     switch (period) {
-      case 'Day':
+      case 'day':
         startDate = DateTime(now.year, now.month, now.day);
         break;
-      case 'Week':
+      case 'week':
         startDate = now.subtract(Duration(days: now.weekday - 1));
         endDate = startDate.add(Duration(days: 6));
         break;
-      case 'Month':
+      case 'month':
         startDate = DateTime(now.year, now.month, 1);
         endDate = DateTime(now.year, now.month + 1, 0);
         break;
-      case 'Year':
+      case 'year':
         startDate = DateTime(now.year, 1, 1);
         endDate = DateTime(now.year, 12, 31);
         break;

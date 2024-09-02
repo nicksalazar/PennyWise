@@ -7,6 +7,7 @@ import 'package:pennywise/providers/category_provider.dart';
 import 'package:pennywise/providers/transaction_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:pennywise/models/transaction_model.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TransactionDetailScreen extends StatefulWidget {
   final String transactionId;
@@ -48,6 +49,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Consumer3<TransactionProvider, CategoryProvider, AccountProvider>(
       builder: (context, transactionProvider, categoryProvider, accountProvider,
           child) {
@@ -56,7 +58,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen>
           orElse: () => TransactionModel(
             id: '',
             amount: 0,
-            description: 'Unknown',
+            description: l10n.unknown,
             date: DateTime.now(),
             categoryId: '',
             accountId: '',
@@ -68,7 +70,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen>
           (c) => c.id == transaction.categoryId,
           orElse: () => Category(
             id: '',
-            name: 'Unknown',
+            name: l10n.unknown,
             color: '#000000',
             icon: 'help',
             type: 'expense',
@@ -79,7 +81,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen>
           (a) => a.id == transaction.accountId,
           orElse: () => Account(
             id: '',
-            name: 'Unknown',
+            name: l10n.unknown,
             balance: 0,
             color: '#000000',
             icon: 'help',
@@ -88,11 +90,11 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen>
 
         return Scaffold(
           appBar: AppBar(
-            title: Text('Transaction Details'),
+            title: Text(l10n.transactionDetail),
             actions: [
               IconButton(
                 icon: Icon(Icons.edit),
-                onPressed: () => _editTransaction(context, transaction),
+                onPressed: () => _editTransaction(context, transaction, l10n),
               ),
               // IconButton(
               //   icon: Icon(Icons.share),
@@ -117,23 +119,23 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen>
                   ),
                   SizedBox(height: 24),
                   _buildDetailGroup(
-                    'Transaction Details',
+                    l10n.transactionDetail,
                     [
-                      _buildDetailRow('Description', transaction.description,
-                          Icons.description),
-                      _buildDetailRow('Date', _formatDate(transaction.date),
+                      _buildDetailRow(l10n.trasactionDescription,
+                          transaction.description, Icons.description),
+                      _buildDetailRow(l10n.date, _formatDate(transaction.date),
                           Icons.calendar_today),
                     ],
                   ),
                   SizedBox(height: 16),
                   _buildDetailGroup(
-                    'Category and Account',
+                    l10n.categoryAndAccount,
                     [
-                      _buildDetailRow('Category', category.name, Icons.category,
+                      _buildDetailRow(l10n.category, category.name, Icons.category,
                           color: Color(
                               int.parse('0xFF${category.color.substring(1)}'))),
                       _buildDetailRow(
-                          'Account', account.name, Icons.account_balance,
+                          l10n.accountsTitle, account.name, Icons.account_balance,
                           color: Color(
                               int.parse('0xFF${account.color.substring(1)}'))),
                     ],
@@ -142,8 +144,8 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen>
                   Center(
                     child: ElevatedButton.icon(
                       icon: Icon(Icons.delete),
-                      label: Text('Delete Transaction'),
-                      onPressed: () => _deleteTransaction(context, transaction),
+                      label: Text(l10n.deleteTransaction),
+                      onPressed: () => _deleteTransaction(context, transaction, l10n),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).colorScheme.error,
                         foregroundColor: Theme.of(context).colorScheme.onError,
@@ -201,10 +203,10 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen>
     return '${date.day}/${date.month}/${date.year}';
   }
 
-  void _editTransaction(BuildContext context, TransactionModel transaction) {
+  void _editTransaction(BuildContext context, TransactionModel transaction, AppLocalizations l10n) {
     // TODO: Implement edit functionality
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Edit functionality coming soon!')),
+      SnackBar(content: Text(l10n.comingSoon)),
     );
   }
 
@@ -221,20 +223,20 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen>
 //     Share.share(shareText, subject: 'Transaction Details');
 //   }
 
-  void _deleteTransaction(BuildContext context, TransactionModel transaction) {
+  void _deleteTransaction(BuildContext context, TransactionModel transaction, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return AlertDialog(
-          title: Text('Confirm Deletion'),
-          content: Text('Are you sure you want to delete this transaction?'),
+          title: Text(l10n.deleteTransaction),
+          content: Text(l10n.deleteTransactionPrompt),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancel'),
+              child: Text(l10n.cancel),
               onPressed: () => Navigator.of(dialogContext).pop(),
             ),
             TextButton(
-              child: Text('Delete'),
+              child: Text(l10n.delete),
               onPressed: () async {
                 Navigator.of(dialogContext).pop();
                 await Provider.of<TransactionProvider>(context, listen: false)
@@ -242,7 +244,7 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen>
                     .then((_) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Transaction deleted successfully'),
+                      content: Text(l10n.transactionDeleted),
                       duration: Duration(seconds: 2),
                     ),
                   );
