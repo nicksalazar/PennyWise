@@ -5,6 +5,7 @@ import 'package:pennywise/providers/category_provider.dart';
 import 'package:pennywise/utils/icon_utils.dart';
 import 'package:pennywise/widgets/my_drawer.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CategoriesScreen extends StatefulWidget {
   @override
@@ -20,20 +21,20 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     });
   }
 
-  void _deleteCategory(Category category) {
+  void _deleteCategory(Category category, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirmar eliminación'),
-          content: Text('¿Estás seguro de que deseas eliminar esta categoría?'),
+          title: Text(l10n.confirmDeletion),
+          content: Text(l10n.deleteCategoryConfirmation),
           actions: <Widget>[
             TextButton(
-              child: Text('Cancelar'),
+              child: Text(l10n.cancel),
               onPressed: () => Navigator.of(context).pop(),
             ),
             TextButton(
-              child: Text('Eliminar'),
+              child: Text(l10n.delete),
               onPressed: () {
                 Provider.of<CategoryProvider>(context, listen: false)
                     .deleteCategory(category.id);
@@ -56,17 +57,12 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
     return Scaffold(
       drawer: MyDrawer(),
       appBar: AppBar(
-        title: Text('Categorías'),
-        actions: [
-          IconButton(
-            icon: Icon(Icons.fullscreen),
-            onPressed: () {},
-          ),
-        ],
+        title: Text(l10n.categories),
       ),
       body: Consumer<CategoryProvider>(
         builder: (context, categoryProvider, child) {
@@ -81,7 +77,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   children: [
                     Expanded(
                       child: _buildTabButton(
-                        'GASTOS',
+                        l10n.expenses,
                         'expense',
                         theme,
                       ),
@@ -89,7 +85,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                     SizedBox(width: 16),
                     Expanded(
                       child: _buildTabButton(
-                        'INGRESOS',
+                        l10n.income,
                         'income',
                         theme,
                       ),
@@ -105,9 +101,9 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
                   crossAxisSpacing: 16,
                   children: [
                     ...categories.map(
-                      (category) => _buildCategoryItem(category, theme),
+                      (category) => _buildCategoryItem(category, theme, l10n),
                     ),
-                    _buildAddCategoryItem(theme),
+                    _buildAddCategoryItem(theme, l10n),
                   ],
                 ),
               ),
@@ -138,9 +134,10 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  Widget _buildCategoryItem(Category category, ThemeData theme) {
+  Widget _buildCategoryItem(
+      Category category, ThemeData theme, AppLocalizations l10n) {
     return GestureDetector(
-      onLongPress: () => _deleteCategory(category),
+      onLongPress: () => _deleteCategory(category, l10n),
       child: Card(
         elevation: 2,
         shape: RoundedRectangleBorder(
@@ -155,7 +152,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
     );
   }
 
-  Widget _buildAddCategoryItem(ThemeData theme) {
+  Widget _buildAddCategoryItem(ThemeData theme, AppLocalizations l10n) {
     return InkWell(
       onTap: () {
         context.go('/categories/new_category/$_selectedTab');
@@ -168,7 +165,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         child: CategoryIcon(
           color: theme.colorScheme.secondary,
           icon: Icons.add,
-          label: 'Añadir',
+          label: l10n.add,
         ),
       ),
     );
@@ -179,12 +176,11 @@ Color _hexToColor(String hex) {
   try {
     return Color(int.parse(hex.replaceFirst('#', '0xff')));
   } catch (e) {
-    print('Color hexadecimal inválido: $hex');
     return Colors.grey; // Color por defecto en caso de error
   }
 }
 
-class CategoryIcon extends StatelessWidget {
+class CategoryIcon extends StatefulWidget {
   final Color color;
   final IconData icon;
   final String label;
@@ -197,22 +193,58 @@ class CategoryIcon extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  State<CategoryIcon> createState() => _CategoryIconState();
+}
+
+class _CategoryIconState extends State<CategoryIcon> with SingleTickerProviderStateMixin {
+  late ScrollController _scrollController;
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 10),
+    )..repeat(reverse: true);
+
+    _animationController.addListener(() {
+      _scrollController.jumpTo(_animationController.value *
+          _scrollController.position.maxScrollExtent);
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         CircleAvatar(
-          backgroundColor: color,
+          backgroundColor: widget.color,
           radius: 25,
-          child: Icon(icon, color: Colors.white, size: 30),
+          child: Icon(widget.icon, color: Colors.white, size: 30),
         ),
         SizedBox(height: 8),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
-          textAlign: TextAlign.center,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
+        Flexible(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            controller: _scrollController,
+            child: Text(
+              widget.label,
+              style: Theme.of(context).textTheme.bodySmall,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.visible,
+            ),
+          ),
         ),
       ],
     );

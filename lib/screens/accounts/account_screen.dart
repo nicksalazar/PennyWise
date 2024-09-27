@@ -144,8 +144,7 @@ class _AccountScreenState extends State<AccountScreen> {
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor:
-              Color(int.parse(account.color.replaceFirst('#', '0xFF'))),
+          backgroundColor: _parseColor(account.color),
           child: Icon(getIconDataByName(account.icon), color: Colors.white),
         ),
         title: Text(account.name, style: theme.textTheme.titleMedium),
@@ -160,5 +159,17 @@ class _AccountScreenState extends State<AccountScreen> {
         onTap: () => context.go("/accounts/edit_account/${account.id}"),
       ),
     );
+  }
+
+  Color _parseColor(String colorString) {
+    try {
+      if (colorString.startsWith('#')) {
+        colorString = colorString.replaceFirst('#', '0xFF');
+      }
+      return Color(int.parse(colorString));
+    } catch (e) {
+      // Manejar el error y devolver un color por defecto
+      return Colors.grey; // O cualquier color por defecto que prefieras
+    }
   }
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pennywise/providers/auth_provider.dart';
-import 'package:pennywise/screens/settings/language_settings_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -115,17 +114,6 @@ class _MyDrawerState extends State<MyDrawer> {
             title: l10n.myDrawerSettings,
             route: '/settings',
             currentRoute: currentRoute,
-          ),
-          ListTile(
-            leading: Icon(Icons.language),
-            title: Text(l10n.languageSettings),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => LanguageSettingsScreen()),
-              );
-            },
           ),
           ListTile(
             leading: Icon(Icons.logout),

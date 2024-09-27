@@ -1,40 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:pennywise/data/currency_data.dart';
-import 'package:pennywise/l10n/l10n.dart';
+import 'package:pennywise/providers/language_provider.dart';
+import 'package:pennywise/widgets/my_drawer.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SettingsScreen extends StatelessWidget {
-  final Function(String) onLanguageChanged;
-  final Function(String) onCurrencyChanged;
-
-  const SettingsScreen({
-    Key? key,
-    required this.onLanguageChanged,
-    required this.onCurrencyChanged,
-  }) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
+    final languageProvider = Provider.of<LanguageProvider>(context);
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
+      drawer: MyDrawer(),
       appBar: AppBar(
         title: Text(
-          L10n.translate('settings'),
-        ),
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-          ),
-          onPressed: () => Navigator.pop(context),
+          l10n.myDrawerSettings,
         ),
       ),
       body: ListView(
         children: [
           ListTile(
-            title: Text(L10n.translate('language')),
+            title: Text(l10n.languageSettings),
             trailing: DropdownButton<String>(
-              value: L10n.currentLocale,
+              value: languageProvider.currentLocale.languageCode,
               onChanged: (String? newValue) {
                 if (newValue != null) {
-                  onLanguageChanged(newValue);
+                  languageProvider.changeLanguage(Locale(newValue));
                 }
               },
               items: [
@@ -54,18 +46,21 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           ListTile(
-            title: Text(L10n.translate('currency')),
+            title: Text(l10n.currencySettings),
             trailing: DropdownButton<String>(
-              value: L10n.currentCurrency,
+              value: languageProvider
+                  .selectedCurrency, // Default value, you can change this to a variable
               onChanged: (String? newValue) {
                 if (newValue != null) {
-                  onCurrencyChanged(newValue);
+                  languageProvider.changeCurrency(newValue);
                 }
               },
-              items: currencies.map((currency) {
-                return DropdownMenuItem(
+              items: currencies.map<DropdownMenuItem<String>>((currency) {
+                return DropdownMenuItem<String>(
                   value: currency['code'],
-                  child: Text('${currency['name']} (${currency['symbol']})'),
+                  child: Text(
+                    '${currency['name'][languageProvider.currentLocale.languageCode]} (${currency['symbol']})',
+                  ),
                 );
               }).toList(),
             ),

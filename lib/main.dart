@@ -111,8 +111,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _locale = 'en';
-  String _currencyCode = 'USD';
   late final GoRouter _router;
 
   @override
@@ -220,26 +218,10 @@ class _MyAppState extends State<MyApp> {
         //Logout
         GoRoute(
           path: '/settings',
-          builder: (context, state) => SettingsScreen(
-            onLanguageChanged: _changeLanguage,
-            onCurrencyChanged: _changeCurrency,
-          ),
+          builder: (context, state) => SettingsScreen(),
         ),
       ],
     );
-  }
-
-  void _changeLanguage(String locale) async {
-    await L10n.load(locale);
-    setState(() {
-      _locale = locale;
-    });
-  }
-
-  void _changeCurrency(String currencyCode) {
-    setState(() {
-      _currencyCode = currencyCode;
-    });
   }
 
   @override

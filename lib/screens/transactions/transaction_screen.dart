@@ -209,8 +209,8 @@ class _TransactionScreenState extends State<TransactionScreen> {
     );
   }
 
-  Widget _buildCategorySection(
-      CategoryProvider categoryProvider, ThemeData theme, AppLocalizations l10n) {
+  Widget _buildCategorySection(CategoryProvider categoryProvider,
+      ThemeData theme, AppLocalizations l10n) {
     List<Category> categories = categoryProvider.categories
         .where(
             (category) => category.type == (isExpense ? 'expense' : 'income'))
@@ -375,6 +375,7 @@ class _TransactionScreenState extends State<TransactionScreen> {
   }
 
   Widget _buildAddButton(ThemeData theme, AppLocalizations l10n) {
+    print('selectedCategory: $selectedCategory');
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
@@ -390,7 +391,19 @@ class _TransactionScreenState extends State<TransactionScreen> {
         ),
         onPressed: () {
           if (_formKey.currentState!.validate() && selectedCategory != null) {
-            // ... (código existente)
+            Provider.of<TransactionProvider>(context, listen: false)
+                .addTransaction(
+              TransactionModel(
+                id: '',
+                description: commentController.text,
+                date: selectedDate,
+                categoryId: selectedCategory!.id,
+                accountId: selectedAccount!.id,
+                amount: double.parse(amountController.text),
+                transactionType: isExpense ? 'expense' : 'income',
+              ),
+            );
+            Navigator.of(context).pop();
           } else if (selectedCategory == null) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(

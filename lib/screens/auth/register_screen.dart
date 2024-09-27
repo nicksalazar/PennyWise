@@ -162,6 +162,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             .set({
           'balance': 0,
           'name': 'Cuenta Principal',
+          'icon': 'account_balance',
+          'color': 'blue',
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
